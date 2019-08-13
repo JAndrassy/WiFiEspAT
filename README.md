@@ -5,6 +5,8 @@ This library creates standard Arduino WiFi networking API over ESP8266 AT comman
 
 This library is fast and reliable. It can communicate with AT firmware at high baud rates without flow control, limited only by reliability of UART at chosen speed. But it doesn't support SSL (https) secure networking for now.
 
+The library is for all Arduino MCU architectures.
+
 ## Contents
 
 * [Getting started](#getting-started)
@@ -65,6 +67,13 @@ Older 1.x versions of esp8266 AT firmware will work with this library, except of
 Espressif prepares an AT firmware binary of 1.7.x build with all options. It requires at least 2 MB (16 Mbit) of flash memory. ESP8266 with 1 MB (8 Mbit) and 512 kB (4 Mbit) flash memory can't use this binary.
 
 GitHub user loboris (Boris Lovosevic) builds customized versions of AT firmware with SDK 3 for all flash sizes. You can download the files from his [ESP8266_AT_LoBo GitHub repository](https://github.com/loboris/ESP8266_AT_LoBo).
+
+AT firmware resources:
+* [the Espressif binaries](https://www.espressif.com/en/support/download/at?keys=&field_type_tid%5B%5D=14) - only AT version 1.7 is good for this library
+* [AT reference](https://www.espressif.com/en/support/download/overview?keys=AT+Instruction+Set&field_type_tid%5B%5D=14) - it contains firmware flashing instructions too
+* [Flash Download Tool](https://www.espressif.com/en/support/download/other-tools?keys=&field_type_tid%5B%5D=14) It is Windows only, but can detect settings of your esp8266 and apply them to the flashed settings binary
+* [esptool.py installation instructions](https://github.com/espressif/esptool#installation--dependencies)
+* [AT LoBo flashing instructions](https://github.com/loboris/ESP8266_AT_LoBo/#flashing). First install esptool.py. If you download the AT LoBo repository as zip, it contains the firmware binaries and a script to flash them.
 
 
 ## Wiring of esp8266 module
