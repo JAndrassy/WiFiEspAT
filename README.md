@@ -7,6 +7,8 @@ This library is fast and reliable. It can communicate with AT firmware at high b
 
 The library is for all Arduino MCU architectures.
 
+![MKR Zero with esp-01S](mkrzero-esp-01s.jpg)
+
 ## Contents
 
 * [Getting started](#getting-started)
@@ -64,7 +66,11 @@ Version 2.0 of the esp8266 AT firmware can't be used with this library. It is di
 
 Older 1.x versions of esp8266 AT firmware will work with this library, except of receiving data with WiFiClient.
 
-Espressif prepares an AT firmware binary of 1.7.x build with all options. It requires at least 2 MB (16 Mbit) of flash memory. ESP8266 with 1 MB (8 Mbit) and 512 kB (4 Mbit) flash memory can't use this binary.
+The Espressif AT binary is built for 2MB-c1 flash partitioning. Flash Download Tool corrects it for 4 MB flash, but for esptool you must use the `--flash_size 2MB-c1` option and the corresponding addresses. (It works for 1 MB module too.)
+
+```
+esptool.py write_flash --flash_size 2MB-c1 0x0 boot_v1.7.bin 0x01000 at/1024+1024/user1.2048.new.5.bin 0x1fb000 blank.bin 0x1fc000 esp_init_data_default_v08.bin 0xfe000 blank.bin 0x1fe000 blank.bin
+```
 
 GitHub user loboris (Boris Lovosevic) builds customized versions of AT firmware with SDK 3 for all flash sizes. You can download the files from his [ESP8266_AT_LoBo GitHub repository](https://github.com/loboris/ESP8266_AT_LoBo).
 
@@ -193,7 +199,7 @@ mega.build.extra_flags=-DWIFIESPAT_TCP_RX_BUFFER_SIZE=128 -DWIFIESPAT_TCP_TX_BUF
 
 The library functions with bool as return type return false in case of fail. The functions which return a value return 0 or - 1 in case of error, depending on the semantic of the function. To get the reason of the error the sketch can test the WiFi.getLastDriverError(). The error codes are enumerated in util/EspAtDrvTypes.h.
 
-For some functions 0 or false as returned value can have a meaning of error or be a valid return value. For example if you call `read(buffer, size)` without previously testing if bytes are available, then returned 0 can have the meaning of no bytes available or error occurred.
+For some functions 0 or false as returned value can have a meaning of error or be a valid return value. For example if you call `readBytes`, which has unsigned return type, without previously testing if bytes are available, then returned 0 can have the meaning of no bytes available or error occurred.
 
 ### UART Flow Control
 
