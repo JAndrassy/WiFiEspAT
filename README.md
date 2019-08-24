@@ -7,6 +7,8 @@ This library is fast and reliable. It can communicate with AT firmware at high b
 
 The library is for all Arduino MCU architectures.
 
+![MKR Zero with esp-01S](mkrzero-esp-01s.jpg)
+
 ## Contents
 
 * [Getting started](#getting-started)
