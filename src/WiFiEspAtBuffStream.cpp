@@ -36,6 +36,7 @@ void WiFiEspAtBuffStream::setUdpPort(const char* _udpHost, uint16_t _udpPort) {
 void WiFiEspAtBuffStream::reset() {
   linkId = NO_LINK;
   rxBufferLength = 0;
+  rxBufferIndex = 0;
   txBufferLength = 0;
   udpPort = 0;
 }
