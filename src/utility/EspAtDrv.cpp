@@ -33,6 +33,7 @@ const char CIPSTA[] PROGMEM = "+CIPSTA";
 const char CIPAP[] PROGMEM = "+CIPAP";
 const char QOUT_COMMA_QOUT[] PROGMEM = "\",\"";
 const char PROCESSED[] PROGMEM = " ...processed";
+const char IGNORED[] PROGMEM = " ...ignored";
 
 #if LOG_LEVEL >= LOG_LEVEL_DEBUG
 class DebugPrint : public Print {
@@ -76,9 +77,9 @@ bool EspAtDrvClass::reset(int8_t resetPin) {
     LOG_INFO_PRINTLN(F("soft reset"));
   }
   if (resetPin >= 0) {
-    pinMode(12, OUTPUT);
+    pinMode(resetPin, OUTPUT);
     delay(1);
-    pinMode(12, INPUT);
+    pinMode(resetPin, INPUT);
     readRX(PSTR("ready")); // can be missed
   } else {
     cmd->print(F("AT+RST"));
@@ -626,9 +627,11 @@ uint8_t EspAtDrvClass::connect(const char* type, const char* host, uint16_t port
     cmd->print(udpLocalPort);
     cmd->print(",2");
   }
-  if (!sendCommand())
-    return NO_LINK;
   link.flags = LINK_CONNECTED;
+  if (!sendCommand()) {
+    link.flags = 0;
+    return NO_LINK;
+  }
   if (udpLocalPort != 0) {
     link.flags |= LINK_IS_UDP_LISTNER;
     link.udpDataCallback = udpDataCallback;
@@ -1047,15 +1050,17 @@ bool EspAtDrvClass::readRX(PGM_P expected, bool bufferData, bool listItem) {
           }
         }
       } else { // +IPD truncated in serial buffer overflow
-        LOG_DEBUG_PRINTLN(F(" ...ignored"));
+        LOG_DEBUG_PRINTLN((FSH_P) IGNORED);
       }
     } else if (strcmp_P(buffer + 1, PSTR(",CONNECT")) == 0) {
       uint8_t linkId = buffer[0] - 48;
       LinkInfo& link = linkInfo[linkId];
       if (link.available == 0 && (!link.isConnected() || link.isClosing())) { // incoming connection (and we could miss CLOSED)
         link.flags = LINK_CONNECTED | LINK_IS_INCOMING;
+        LOG_DEBUG_PRINTLN((FSH_P) PROCESSED);
+      } else {
+        LOG_DEBUG_PRINTLN((FSH_P) IGNORED);
       }
-      LOG_DEBUG_PRINTLN((FSH_P) PROCESSED);
     } else if ((strcmp_P(buffer + 1, PSTR(",CLOSED")) == 0 || strcmp_P(buffer + 1, PSTR(",CONNECT FAIL")) == 0)) {
       uint8_t linkId = buffer[0] - 48;
       linkInfo[linkId].flags = 0;
@@ -1099,7 +1104,7 @@ bool EspAtDrvClass::readRX(PGM_P expected, bool bufferData, bool listItem) {
         lastErrorCode = EspAtDrvError::AT_NOT_RESPONDIG;
         return false;
       }
-      LOG_DEBUG_PRINT(F(" ...ignored"));
+      LOG_DEBUG_PRINTLN((FSH_P) IGNORED);
       LOG_DEBUG_PRINTLN();
     }
   }
