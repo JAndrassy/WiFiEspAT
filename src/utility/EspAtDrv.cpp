@@ -307,8 +307,6 @@ bool EspAtDrvClass::joinAP(const char* ssid, const char* password, const uint8_t
   if (!setWifiMode(wifiMode | WIFI_MODE_STA, persistent))
     return false; // can't join ap withou sta mode
   if (persistent) {
-    if (!simpleCommand(PSTR("AT+CWAUTOCONN=1"))) // use the persistent setting to autoconnect
-      return false;
     cmd->print(F("AT+CWJAP=\""));
   } else {
     cmd->print(F("AT+CWJAP_CUR=\""));
@@ -349,6 +347,16 @@ bool EspAtDrvClass::quitAP() {
   }
   simpleCommand(PSTR("AT+CWDHCP=1,1")); // enable DHCP back in case static IP disabled it
   return simpleCommand(PSTR("AT+CWQAP")); // it doesn't clear the persistent settings
+}
+
+bool EspAtDrvClass::staAutoConnect(bool autoConnect) {
+  LOG_INFO_PRINT_PREFIX();
+  LOG_INFO_PRINT(F("STA auto connect "));
+  LOG_INFO_PRINTLN(autoConnect ? F("on") : F("off"));
+
+  cmd->print(F("AT+CWAUTOCONN="));
+  cmd->print(autoConnect ? 1 : 0);
+  return sendCommand();
 }
 
 bool EspAtDrvClass::apQuery(char* ssid, uint8_t* bssid, uint8_t& channel, int32_t& rssi) {

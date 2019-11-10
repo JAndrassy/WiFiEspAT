@@ -64,6 +64,7 @@ void setup() {
   int status = WiFi.begin(ssid, pass);
 
   if (status == WL_CONNECTED) {
+    WiFi.setAutoConnect(true);
     Serial.println();
     Serial.println("Connected to WiFi network.");
     printWifiStatus();

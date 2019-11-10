@@ -60,6 +60,7 @@ public:
 
   void setPersistent(bool persistent = true);
 
+  bool setAutoConnect(bool autoConnect);
   int begin(const char* ssid, const char *passphrase = nullptr, const uint8_t* bssid = nullptr);
   int disconnect(void);
 

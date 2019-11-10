@@ -68,6 +68,7 @@ public:
 
   bool joinAP(const char* ssid, const char* password, const uint8_t* bssid, bool persistent = false);
   bool quitAP();
+  bool staAutoConnect(bool autoConnect);
   bool apQuery(char* ssid, uint8_t* bssid, uint8_t& channel, int32_t& rssi);
 
   bool softApIp(const IPAddress& local_ip, const IPAddress& gateway, const IPAddress& subnet, bool persistent = false);

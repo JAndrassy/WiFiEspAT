@@ -66,6 +66,10 @@ uint8_t WiFiClass::status() {
   return state;
 }
 
+bool WiFiClass::setAutoConnect(bool autoConnect) {
+  return EspAtDrv.staAutoConnect(autoConnect);
+}
+
 int WiFiClass::begin(const char* ssid, const char* passphrase, const uint8_t* bssid) {
   bool ok = EspAtDrv.joinAP(ssid, passphrase, bssid, persistent);
   state = ok ? WL_CONNECTED : WL_CONNECT_FAILED;

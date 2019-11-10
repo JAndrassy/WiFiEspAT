@@ -100,13 +100,13 @@ For hardware serial high baud rates can be used. For Arduino Mega 500000 baud wo
 
 ## Persistent WiFi connection
 
-The esp8266 can remember the WiFi network settings to connect automatically to WiFi network after power-up or reset. This library supports this with the SetupWiFiConnection example tool sketch. The sketch uses the WiFi.setPersistent() setting. After the connection is successful, it is remembered by the esp8266. Other sketches don't need to call WiFi.begin(), only wait until WiFi.status() returns WL_CONNECTED.
+The esp8266 can remember the WiFi network settings to connect automatically to WiFi network after power-up or reset. This library supports this with the SetupWiFiConnection example tool sketch. The sketch uses the WiFi.setPersistent() and WiFi.setAutoConnect() setting. After the connection is successful, it is remembered by the esp8266. Other sketches don't need to call WiFi.begin(), only wait until WiFi.status() returns WL_CONNECTED.
 
 Using persistent connections has two benefits. The sketch size is smaller without WiFi.begin() and the connection to network is asynchronous, it happens while other devices are setup in setup(). (Synchronous WiFi.begin() with DHCP waits 5 seconds for the OK from AT firmware.)
 
 WiFi.disconnect() clears the remembered connection and disables automatic connection to network. Don't use WiFi.setPersistent() and WiFi.disconnect() in the same sketch. The settings would be written to flash and then cleared repeatedly, which would lead to faster esp8266 flash memory wearing.
 
-Without WiFi.setPersistent() the network settings are not remembered and the connection created with WiFi.begin is temporary until reset or power-down. If esp8266 has remembered connection, it can collide with WiFi.begin(). Clear the persistent connection with WiFi.disconnect() before using a temporary connection.
+Without WiFi.setAutoConnect(true) the remembered network settings are not used (default is true until first disconnect()). If esp8266 auto starts the connection, it can collide with WiFi.begin(). Clear the persistent connection with WiFi.disconnect() before using a temporary connection.
 
 
 ## Persistent Access Point
@@ -124,6 +124,7 @@ This library implements Arduino WiFi networking API. The last version of this AP
 
 * `init` command to set the Serial interface used for communication
 * `setPersistent` to set the remembering of the following WiFi connection (see the SetupPersistentWiFiConnection.ino tool example)
+* `setAutoConnect` to set the automatic connection to remembered WiFi AP (see the SetupPersistentWiFiConnection.ino tool example)
 * `scanNetworks` optionally can be called with array of type `WiFiApData[]` to fill
 * `SSID` optionally can be called with char array to fill (see PrintPersistentSettings.ino tool example)
 * `dhcpIsEnabled` to determine if DHCP or static IP is used (see PrintPersistentSettings.ino tool example)
