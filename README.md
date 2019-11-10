@@ -60,22 +60,20 @@ The AT firmware is limited to one TCP server. The AT LoBo customized firmware ad
 
 ## AT firmware versions
 
-This library requires esp8266 AT firmware 1.7.x. AT firmware 1.7.x is build on Espressif SDK 3.0.0. You can use the CheckFirmware sketch from examples Tools to check the version of the AT firmware. 
+This library requires esp8266 AT firmware 1.7.x. AT firmware 1.7.x is build on Espressif NonOS SDK 3. You can use the CheckFirmware sketch from examples Tools to check the version of the AT firmware. 
 
 Version 2.0 of the esp8266 AT firmware can't be used with this library. It is different because it is based on ESP32 AT firmware and doesn't support passive receive mode.
 
-Older 1.x versions of esp8266 AT firmware will work with this library, except of receiving data with WiFiClient.
-
-The Espressif AT binary is built for 2MB-c1 flash partitioning. Flash Download Tool corrects it for 4 MB flash, but for esptool you must use the `--flash_size 2MB-c1` option and the corresponding addresses. (It works for 1 MB module too.)
+The Espressif AT binary is built for 2MB-c1 flash partitioning. Flash Download Tool corrects it for 4 MB flash, but for esptool you must use the `--flash_size 2MB-c1` option and the corresponding addresses.
 
 ```
 esptool.py write_flash --flash_size 2MB-c1 0x0 boot_v1.7.bin 0x01000 at/1024+1024/user1.2048.new.5.bin 0x1fb000 blank.bin 0x1fc000 esp_init_data_default_v08.bin 0xfe000 blank.bin 0x1fe000 blank.bin
 ```
 
-GitHub user loboris (Boris Lovosevic) builds customized versions of AT firmware with SDK 3 for all flash sizes. You can download the files from his [ESP8266_AT_LoBo GitHub repository](https://github.com/loboris/ESP8266_AT_LoBo).
+GitHub user loboris (Boris Lovosevic) builds customized versions of AT firmware with SDK 3 for all flash sizes. You can download the files from his [ESP8266_AT_LoBo GitHub repository](https://github.com/loboris/ESP8266_AT_LoBo). If you can't run his flash.sh utility, then for 1 MB flash you can Flash Download Tool with bin/upgrade/esp8266_AT_1_2.bin file and the right addresses for 1 MB flash: boot_v1.7.bin on 0x0; esp8266_AT_1_2.bin on 0x01000; esp_init_data_default.bin on 0xfc000 and blank.bin on 0x7e000 and 0xfe000.
 
 AT firmware resources:
-* [the Espressif binaries](https://www.espressif.com/en/support/download/at?keys=&field_type_tid%5B%5D=14) - only AT version 1.7 is good for this library
+* [the Espressif binaries](https://www.espressif.com/en/support/download/at?keys=&field_type_tid%5B%5D=14) - only AT version 1.7 or 1.7.x is good for this library
 * [AT reference](https://www.espressif.com/en/support/download/overview?keys=AT+Instruction+Set&field_type_tid%5B%5D=14) - it contains firmware flashing instructions too
 * [Flash Download Tool](https://www.espressif.com/en/support/download/other-tools?keys=&field_type_tid%5B%5D=14) It is Windows only, but can detect settings of your esp8266 and apply them to the flashed settings binary
 * [esptool.py installation instructions](https://github.com/espressif/esptool#installation--dependencies)

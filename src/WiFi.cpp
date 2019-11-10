@@ -45,13 +45,22 @@ uint8_t WiFiClass::status() {
   int res = EspAtDrv.staStatus();
   switch (res) {
     case -1:
-      state = WL_NO_MODULE;
+      switch (EspAtDrv.getLastErrorCode()) {
+        case EspAtDrvError::NOT_INITIALIZED:
+        case EspAtDrvError::AT_NOT_RESPONDIG:
+          state = WL_NO_MODULE;
+          break;
+        default: // some temporary error?
+          break; // no change
+      }
       break;
     case 2:
     case 3:
     case 4:
       state = WL_CONNECTED;
       break;
+    case 0: // inactive
+    case 1: // idle
     case 5: // STA disconnected
       switch (state) {
         case WL_CONNECT_FAILED:
@@ -142,7 +151,8 @@ IPAddress WiFiClass::dnsServer2() {
 bool WiFiClass::dhcpIsEnabled() {
   bool sta;
   bool ap;
-  EspAtDrv.dhcpStateQuery(sta, ap);
+  if (!EspAtDrv.dhcpStateQuery(sta, ap))
+    return false;
   return sta;
 }
 

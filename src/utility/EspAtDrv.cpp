@@ -222,7 +222,7 @@ bool EspAtDrvClass::staDNS(const IPAddress& dns1, const IPAddress& dns2, bool pe
   if (!setWifiMode(mode, false))
     return false;  // can't set dns without sta mode
   if (persistent) {
-    cmd->print(F("AT+CIPDNS="));
+    cmd->print(F("AT+CIPDNS_DEF="));
   } else {
     cmd->print(F("AT+CIPDNS_CUR="));
   }
@@ -305,7 +305,7 @@ bool EspAtDrvClass::joinAP(const char* ssid, const char* password, const uint8_t
   LOG_INFO_PRINTLN(persistent ? F(" persistent") : F(" current") );
 
   if (!setWifiMode(wifiMode | WIFI_MODE_STA, persistent))
-    return false; // can't join ap withou sta mode
+    return false; // can't join ap without sta mode
   if (persistent) {
     cmd->print(F("AT+CWJAP=\""));
   } else {
@@ -346,6 +346,7 @@ bool EspAtDrvClass::quitAP() {
     simpleCommand(PSTR("AT+CWAUTOCONN=0")); // don't reconnect on reset
   }
   simpleCommand(PSTR("AT+CWDHCP=1,1")); // enable DHCP back in case static IP disabled it
+  simpleCommand(PSTR("AT+CIPDNS_DEF=0")); // clear static DNS servers
   return simpleCommand(PSTR("AT+CWQAP")); // it doesn't clear the persistent settings
 }
 
@@ -753,10 +754,10 @@ size_t EspAtDrvClass::recvData(uint8_t linkId, uint8_t data[], size_t buffSize) 
   cmd->print(linkId);
   cmd->print(',');
   cmd->print(len);
-  if (!sendCommand(PSTR("+CIPRECVDATA,"), false))
+  if (!sendCommand(PSTR("+CIPRECVDATA"), false))
     return 0;
 
-  len = atol(buffer + strlen("+CIPRECVDATA,"));
+  len = atol(buffer + strlen("+CIPRECVDATA,")); // AT 1.7.x has : after <data_len> (not matching the doc)
 
   size_t l = serial->readBytes(data, len);
   if (l != len) { //timeout
@@ -854,7 +855,7 @@ bool EspAtDrvClass::dhcpStateQuery(bool& staDHCP, bool& softApDHCP) {
   uint8_t state = buffer[strlen("+CWDHCP:")] - 48;
   softApDHCP = state & 0b01;
   staDHCP = state & 0b10;
-  return true;
+  return readOK();
 }
 
 bool EspAtDrvClass::mDNS(const char* hostname, const char* serverName, uint16_t serverPort) {
@@ -1057,8 +1058,10 @@ bool EspAtDrvClass::readRX(PGM_P expected, bool bufferData, bool listItem) {
             lastErrorCode = (EspAtDrvError)((uint8_t) EspAtDrvError::UDP_BUSY + (res - 1));
           }
         }
+#ifndef ESPATDRV_ASSUME_FLOW_CONTROL
       } else { // +IPD truncated in serial buffer overflow
         LOG_DEBUG_PRINTLN((FSH_P) IGNORED);
+#endif
       }
     } else if (strcmp_P(buffer + 1, PSTR(",CONNECT")) == 0) {
       uint8_t linkId = buffer[0] - 48;
@@ -1113,7 +1116,6 @@ bool EspAtDrvClass::readRX(PGM_P expected, bool bufferData, bool listItem) {
         return false;
       }
       LOG_DEBUG_PRINTLN((FSH_P) IGNORED);
-      LOG_DEBUG_PRINTLN();
     }
   }
 }

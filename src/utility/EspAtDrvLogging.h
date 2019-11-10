@@ -46,7 +46,6 @@ extern const char LOG_ERROR_PREFIX_PROGMEM[];
 #define LOG_ERROR_PRINT_PREFIX()
 #define LOG_ERROR_PRINT(msg)
 #define LOG_ERROR_PRINTLN(msg)
-#define LOG_WELCOME
 #endif
 
 #define LOG_WARN_PREFIX "esp WARN: "
