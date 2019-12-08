@@ -27,7 +27,7 @@ SoftwareSerial Serial1(6, 7); // RX, TX
 #define AT_BAUD_RATE 115200
 #endif
 
-#define MAX_CLIENTS 3
+#define MAX_CLIENTS WIFIESPAT_LINKS_COUNT
 
 WiFiServer server(2323);
 

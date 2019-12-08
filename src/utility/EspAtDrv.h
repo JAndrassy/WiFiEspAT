@@ -24,8 +24,8 @@
 #include <IPAddress.h>
 #include "utility/EspAtDrvTypes.h"
 
-const uint8_t LINKS_COUNT = 5;
-const uint8_t NO_LINK = 255;
+const uint8_t LINKS_COUNT = WIFIESPAT_LINKS_COUNT;
+const uint8_t NO_LINK = WIFIESPAT_NO_LINK;
 
 const uint8_t LINK_CONNECTED = (1 << 0);
 const uint8_t LINK_CLOSING = (1 << 1);

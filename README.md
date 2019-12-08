@@ -140,6 +140,7 @@ This library implements Arduino WiFi networking API. The last version of this AP
 
 * `connectSSL` is not implemented. It will be implemented as soon the AT firmware supports passive mode for SSL connection.
 * `abort` closes the TCP connection without waiting for the remote side 
+* `getLinkId` returns the coresponding linkId of AT firmware for advanced use. It returns WIFIESPAT_NO_LINK if the client is unconnected. The valid range is from 0 to WIFIESPAT_LINKS_COUNT. 
 
 ### the WiFiServer class differences
 
@@ -158,6 +159,7 @@ The Arduino UDP API requires to start a listening port to send an UDP message. T
 You can use WiFiUdpSender class if you only send messages. See the UdpSender.ino example.
 
 * `beginMulticast` is not implemented
+* `getLinkId` returns the corresponding linkId of AT firmware for advanced use. It returns WIFIESPAT_NO_LINK if the UDP is not initialized. The valid range is from 0 to WIFIESPAT_LINKS_COUNT.
 
 ## Logging
 

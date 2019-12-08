@@ -63,6 +63,8 @@ public:
 
   using Print::write;
 
+  uint8_t getLinkId() { return linkId; }
+
 private:
   uint8_t linkId;
 

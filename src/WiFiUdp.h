@@ -57,6 +57,8 @@ public:
   virtual int read(char* buffer, size_t len) { (void) buffer; (void) len; return 0;}
   virtual int peek() { return -1;}
 
+  uint8_t getLinkId() { return linkId; }
+
 protected:
 
   uint8_t linkId;

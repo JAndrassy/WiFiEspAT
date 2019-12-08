@@ -22,6 +22,9 @@
 
 #include <stddef.h>
 
+const uint8_t WIFIESPAT_LINKS_COUNT = 5;
+const uint8_t WIFIESPAT_NO_LINK = 255;
+
 class EspAtDrvClass;
 
 enum struct EspAtDrvError {
