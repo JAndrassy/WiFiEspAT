@@ -745,19 +745,15 @@ size_t EspAtDrvClass::recvData(uint8_t linkId, uint8_t data[], size_t buffSize) 
     }
     return 0;
   }
-  size_t len = link.available;
-  if (len > buffSize) {
-    len = buffSize;
-  }
 
   cmd->print(F("AT+CIPRECVDATA="));
   cmd->print(linkId);
   cmd->print(',');
-  cmd->print(len);
+  cmd->print(buffSize);
   if (!sendCommand(PSTR("+CIPRECVDATA"), false))
     return 0;
 
-  len = atol(buffer + strlen("+CIPRECVDATA,")); // AT 1.7.x has : after <data_len> (not matching the doc)
+  size_t len = atol(buffer + strlen("+CIPRECVDATA,")); // AT 1.7.x has : after <data_len> (not matching the doc)
 
   size_t l = serial->readBytes(data, len);
   if (l != len) { //timeout
@@ -769,7 +765,11 @@ size_t EspAtDrvClass::recvData(uint8_t linkId, uint8_t data[], size_t buffSize) 
     return 0;
   }
 
-  link.available -= len;
+  if (len > link.available) {
+    link.available = 0;
+  } else {
+    link.available -= len;
+  }
 
   readOK();
 
