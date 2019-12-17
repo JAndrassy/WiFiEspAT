@@ -20,8 +20,6 @@
 #ifndef _WIFIESPAT_CONFIG_H_
 #define _WIFIESPAT_CONFIG_H_
 
-#define AT_LOBO
-
 #ifndef WIFIESPAT_INTERNAL_AP_LIST_SIZE
 #if defined(__AVR__) && RAMEND <= 0x8FF
 #define WIFIESPAT_INTERNAL_AP_LIST_SIZE 3

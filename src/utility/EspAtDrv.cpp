@@ -24,6 +24,7 @@
 
 const uint8_t WIFI_MODE_STA = 0b01;
 const uint8_t WIFI_MODE_SAP = 0b10;
+const uint16_t MAX_SEND_LENGTH = 2048;
 
 const char OK[] PROGMEM = "OK";
 const char STATUS[] PROGMEM = "STATUS";
@@ -810,6 +811,110 @@ size_t EspAtDrvClass::sendData(uint8_t linkId, const uint8_t data[], size_t len,
     return 0;
 
   serial->write(data, len);
+
+  if (!readRX(PSTR("Recv ")))
+    return 0;
+  size_t l = atol(buffer + strlen("Recv "));
+  if (!readRX(PSTR("SEND "))) // SEND OK or SEND FAIL
+    return 0;
+  if (strcmp_P(buffer + strlen("SEND "), OK) != 0) {// FAIL
+    LOG_ERROR_PRINT_PREFIX();
+    LOG_ERROR_PRINTLN(F("failed to send data"));
+    lastErrorCode = EspAtDrvError::SEND;
+    return 0;
+  }
+  LOG_INFO_PRINT_PREFIX();
+  LOG_INFO_PRINT(F("\tsent "));
+  LOG_INFO_PRINT(l);
+  LOG_INFO_PRINT(F(" bytes on link "));
+  LOG_INFO_PRINTLN(linkId);
+  return l;
+}
+
+size_t EspAtDrvClass::sendData(uint8_t linkId, Stream& file, const char* udpHost, uint16_t udpPort) {
+  maintain();
+
+  LOG_INFO_PRINT_PREFIX();
+  LOG_INFO_PRINT(F("send stream on link "));
+  LOG_INFO_PRINTLN(linkId);
+
+  if (!linkInfo[linkId].isConnected()) {
+    LOG_ERROR_PRINT_PREFIX();
+    LOG_ERROR_PRINTLN(F("link is not connected."));
+    lastErrorCode = EspAtDrvError::LINK_NOT_ACTIVE;
+    return 0;
+  }
+  size_t len = 0;
+  while (file.available()) {
+    int l = file.available();
+    if (l > MAX_SEND_LENGTH) {
+      l = MAX_SEND_LENGTH;
+    }
+    cmd->print(F("AT+CIPSEND="));
+    cmd->print(linkId);
+    cmd->print(',');
+    cmd->print(l);
+    if (udpPort != 0) {
+      cmd->print(F(",\""));
+      cmd->print(udpHost);
+      cmd->print(F("\","));
+      cmd->print(udpPort);
+    }
+    if (!sendCommand(PSTR(">")))
+      return 0;
+    for (int i = 0; i < l; i++) {
+      serial->write(file.read());
+    }
+    if (!readRX(PSTR("Recv ")))
+      return 0;
+    len += atol(buffer + strlen("Recv "));
+    if (!readRX(PSTR("SEND "))) // SEND OK or SEND FAIL
+      return 0;
+    if (strcmp_P(buffer + strlen("SEND "), OK) != 0) {// FAIL
+      LOG_ERROR_PRINT_PREFIX();
+      LOG_ERROR_PRINTLN(F("failed to send data"));
+      lastErrorCode = EspAtDrvError::SEND;
+      return 0;
+    }
+  }
+  LOG_INFO_PRINT_PREFIX();
+  LOG_INFO_PRINT(F("\tsent "));
+  LOG_INFO_PRINT(len);
+  LOG_INFO_PRINT(F(" bytes on link "));
+  LOG_INFO_PRINTLN(linkId);
+  return len;
+}
+
+size_t EspAtDrvClass::sendData(uint8_t linkId, SendCallbackFnc callback, const char* udpHost, uint16_t udpPort) {
+  maintain();
+
+  LOG_INFO_PRINT_PREFIX();
+  LOG_INFO_PRINT(F("send with callback on link "));
+  LOG_INFO_PRINTLN(linkId);
+
+  if (!linkInfo[linkId].isConnected()) {
+    LOG_ERROR_PRINT_PREFIX();
+    LOG_ERROR_PRINTLN(F("link is not connected."));
+    lastErrorCode = EspAtDrvError::LINK_NOT_ACTIVE;
+    return 0;
+  }
+
+  cmd->print(F("AT+CIPSENDEX="));
+  cmd->print(linkId);
+  cmd->print(',');
+  cmd->print(MAX_SEND_LENGTH);
+  if (udpPort != 0) {
+    cmd->print(F(",\""));
+    cmd->print(udpHost);
+    cmd->print(F("\","));
+    cmd->print(udpPort);
+  }
+  if (!sendCommand(PSTR(">")))
+    return 0;
+
+  callback(*serial);
+  delay(20); // mandatory delay before \\0
+  serial->print("\\0"); //end data
 
   if (!readRX(PSTR("Recv ")))
     return 0;

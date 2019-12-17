@@ -22,6 +22,7 @@
 
 #include <Stream.h>
 #include <IPAddress.h>
+#include "utility/EspAtDrvTypes.h"
 
 class WiFiEspAtBuffStream {
 
@@ -38,6 +39,9 @@ public:
   size_t write(const uint8_t *buf, size_t size);
   void flush();
   int availableForWrite();
+
+  size_t write(Stream& file);
+  size_t write(SendCallbackFnc callback);
 
   int8_t getWriteError() {return writeError;}
 

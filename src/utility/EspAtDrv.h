@@ -94,6 +94,8 @@ public:
 
   size_t recvData(uint8_t linkId, uint8_t buff[], size_t buffSize);
   size_t sendData(uint8_t linkId, const uint8_t buff[], size_t dataLength, const char* udpHost, uint16_t udpPort);
+  size_t sendData(uint8_t linkId, Stream& file, const char* udpHost, uint16_t udpPort);
+  size_t sendData(uint8_t linkId, SendCallbackFnc callback, const char* udpHost, uint16_t udpPort);
 
   bool setHostname(const char* hostname);
   bool dhcpStateQuery(bool& staDHCP, bool& softApDHCP); // they have nothing in common, but use the same command

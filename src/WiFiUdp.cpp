@@ -35,6 +35,7 @@ int WiFiUdpSender::beginPacket(const char *host, uint16_t port) {
   }
   linkId = EspAtDrv.connect("UDP", host, port);
   stream.setLinkId(linkId);
+  stream.setUdpPort(host, port);
   return (linkId != NO_LINK);
 }
 
@@ -62,6 +63,10 @@ void WiFiUdpSender::flush() {
 
 int WiFiUdpSender::availableForWrite() {
   return stream.availableForWrite();
+}
+
+size_t WiFiUdpSender::write(SendCallbackFnc callback) {
+  return stream.write(callback);
 }
 
 IPAddress WiFiUdpSender::remoteIP() {

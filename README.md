@@ -139,6 +139,8 @@ This library implements Arduino WiFi networking API. The last version of this AP
 ### the WiFiClient class differences
 
 * `connectSSL` is not implemented. It will be implemented as soon the AT firmware supports passive mode for SSL connection.
+* `write(file)` variant of write function for efficient sending of SD card file. see SDWebServer.ino example 
+* `write(callback)` variant of write function for efficient sending with a callback function. see SDWebServer.ino example 
 * `abort` closes the TCP connection without waiting for the remote side 
 * `getLinkId` returns the coresponding linkId of AT firmware for advanced use. It returns WIFIESPAT_NO_LINK if the client is unconnected. The valid range is from 0 to WIFIESPAT_LINKS_COUNT. 
 
@@ -159,6 +161,7 @@ The Arduino UDP API requires to start a listening port to send an UDP message. T
 You can use WiFiUdpSender class if you only send messages. See the UdpSender.ino example.
 
 * `beginMulticast` is not implemented
+* `write(callback)` variant of write function for efficient sending with a callback function 
 * `getLinkId` returns the corresponding linkId of AT firmware for advanced use. It returns WIFIESPAT_NO_LINK if the UDP is not initialized. The valid range is from 0 to WIFIESPAT_LINKS_COUNT.
 
 ## Logging
@@ -189,12 +192,18 @@ It is recommended to use WiFiClient.flush() after completing the output. WiFiCli
 
 The buffers size can be changed in WiFiEspAtConfig.h or set on build command line. The TCP TX buffer can be set to 0 and the RX buffer must be at least 1 (for peek()), but then please use buffers in sketch for example with [StreamLib's](https://github.com/jandrassy/StreamLib) wrapper class BufferedPrint. 
 
-The size of the UDP TX buffer can be set to zero in WiFiEspAtConfig.h if the complete message is sent with one print(msg) or one write(msg, length). Otherwise the size of the UDP buffers limits the size of the message. If the composed message is larger then the buffer it will be send as partial UDP messages. If the size of received message is larger then the UDP TX buffer, the message will be dropped (with WiFi.getLastDriverError() set to EspAtDrvError::UDP_LARGE).
+The size of the UDP TX buffer can be set to zero in WiFiEspAtConfig.h if the complete message is sent with one print(msg), one write(msg, length) or with write(callback). Otherwise the size of the UDP buffers limits the size of the message. If the composed message is larger then the buffer it will be send as partial UDP messages. If the size of received message is larger then the UDP TX buffer, the message will be dropped (with WiFi.getLastDriverError() set to EspAtDrvError::UDP_LARGE).
 
 To set different custom sizes of buffers for different boards, you can create a file boards.local.txt next to boards.txt file in hardware package. Set build.extra_flags for individual boards. For example for Mega you can add to boards.local.txt a line with -D options to define the macros.
 
 mega.build.extra_flags=-DWIFIESPAT_TCP_RX_BUFFER_SIZE=128 -DWIFIESPAT_TCP_TX_BUFFER_SIZE=128
 
+
+### the `write(callback)` function
+
+While the internal buffering of the library and the use of Nagle's algorithm by AT firmware prevents sending client.prints in many very very small TCP packets, with the write(callback) function all prints executed in the callback function are send to AT firmware with one AT+CIPSENDEX command resulting in efficient TCP or UDP packet size. AT+CIPSENDEX is limited to 2 kbytes and `\\0` terminates the command so it can't occur in data. 
+
+The SDWebServer example shows the use of the `write(callback)` function with C++ anonymous lambda functions as callbacks.
 
 ### EspAtDrv Errors
 

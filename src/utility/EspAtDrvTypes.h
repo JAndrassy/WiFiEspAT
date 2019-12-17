@@ -62,4 +62,6 @@ protected:
   friend EspAtDrvClass;
 };
 
+typedef void (*SendCallbackFnc)(Print& p);
+
 #endif

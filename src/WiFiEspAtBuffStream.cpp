@@ -86,6 +86,16 @@ int WiFiEspAtBuffStream::availableForWrite() {
   return txBufferSize - txBufferLength;
 }
 
+size_t WiFiEspAtBuffStream::write(Stream& file) {
+  flush();
+  return EspAtDrv.sendData(linkId, file, udpHost, udpPort);
+}
+
+size_t WiFiEspAtBuffStream::write(SendCallbackFnc callback) {
+  flush();
+  return EspAtDrv.sendData(linkId, callback, udpHost, udpPort);
+}
+
 int WiFiEspAtBuffStream::available() {
   if (linkId == NO_LINK)
     return 0;

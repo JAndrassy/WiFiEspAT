@@ -74,6 +74,14 @@ void WiFiClient::flush() {
   stream.flush();
 }
 
+size_t WiFiClient::write(Stream& file) {
+  return stream.write(file);
+}
+
+size_t WiFiClient::write(SendCallbackFnc callback) {
+  return stream.write(callback);
+}
+
 int WiFiClient::available() {
   return stream.available();
 }

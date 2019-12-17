@@ -40,6 +40,8 @@ public:
   virtual void flush();
   virtual int availableForWrite();
 
+  size_t write(SendCallbackFnc callback);
+
   using Print::write;
 
   virtual IPAddress remoteIP();
