@@ -948,6 +948,19 @@ bool EspAtDrvClass::setHostname(const char* hostname) {
   return sendCommand();
 }
 
+bool EspAtDrvClass::hostnameQuery(char* hostname) {
+  maintain();
+
+  LOG_INFO_PRINT_PREFIX();
+  LOG_INFO_PRINTLN(F("hostname query"));
+
+  cmd->print(F("AT+CWHOSTNAME?"));
+  if (!sendCommand(PSTR("+CWHOSTNAME")))
+    return false;
+  strcpy(hostname, buffer + strlen("+CWHOSTNAME:"));
+  return readOK();
+}
+
 bool EspAtDrvClass::dhcpStateQuery(bool& staDHCP, bool& softApDHCP) {
   maintain();
 

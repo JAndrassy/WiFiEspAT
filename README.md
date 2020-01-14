@@ -124,6 +124,7 @@ This library implements Arduino WiFi networking API. The last version of this AP
 * `setPersistent` to set the remembering of the following WiFi connection (see the SetupPersistentWiFiConnection.ino tool example)
 * `setAutoConnect` to set the automatic connection to remembered WiFi AP (see the SetupPersistentWiFiConnection.ino tool example)
 * `scanNetworks` optionally can be called with array of type `WiFiApData[]` to fill
+* `hostname` to get the hostname. can be called with char array to fill (see PrintPersistentSettings.ino tool example)
 * `SSID` optionally can be called with char array to fill (see PrintPersistentSettings.ino tool example)
 * `dhcpIsEnabled` to determine if DHCP or static IP is used (see PrintPersistentSettings.ino tool example)
 * `beginAP` can be called without parameters to start the persistent AP (see ConfigurationAP.ino example)

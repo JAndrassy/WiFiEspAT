@@ -23,6 +23,7 @@
 // this statics are removed by compiler if not used
 char WiFiClass::fwVersion[10] = {0};
 char WiFiClass::ssid[33] = {0};
+char WiFiClass::name[33] = {0}; // hostname
 WiFiApData WiFiClass::apDataInternal[WIFIESPAT_INTERNAL_AP_LIST_SIZE];
 
 bool WiFiClass::init(Stream& serial, int8_t resetPin) {
@@ -102,6 +103,13 @@ bool WiFiClass::setDNS(IPAddress dns_server1, IPAddress dns_server2) {
 
 bool WiFiClass::setHostname(const char* name) {
   return EspAtDrv.setHostname(name);
+}
+
+const char* WiFiClass::hostname(char* buffer) {
+  if (!EspAtDrv.hostnameQuery(buffer)) {
+    buffer[0] = 0;
+  }
+  return buffer;
 }
 
 uint8_t* WiFiClass::macAddress(uint8_t* mac) {

@@ -68,6 +68,7 @@ public:
 
   bool setDNS(IPAddress dns_server1, IPAddress dns_server2 = INADDR_NONE);
   bool setHostname(const char* name);
+  const char* hostname(char* buffer = name);
 
   uint8_t* macAddress(uint8_t* mac);
   IPAddress localIP();
@@ -138,6 +139,7 @@ private:
   // this members are removed by compiler if the corresponding function is not used
   static char fwVersion[]; // static is for use as default parameter value of function
   static char ssid[];
+  static char name[]; // hostname
 
   uint8_t apEnc;
   uint8_t apMaxConn;

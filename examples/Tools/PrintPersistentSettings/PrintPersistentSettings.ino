@@ -72,6 +72,11 @@ void printWifiStatus() {
     Serial.println("Station is not connected");
     return;
   }
+  char hostname[33];
+  WiFi.hostname(hostname);
+  Serial.print("hostname ");
+  Serial.println(hostname);
+
   Serial.print("SSID: ");
   Serial.println(ssid);
 

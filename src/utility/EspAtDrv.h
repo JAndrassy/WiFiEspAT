@@ -98,6 +98,7 @@ public:
   size_t sendData(uint8_t linkId, SendCallbackFnc callback, const char* udpHost, uint16_t udpPort);
 
   bool setHostname(const char* hostname);
+  bool hostnameQuery(char* hostname);
   bool dhcpStateQuery(bool& staDHCP, bool& softApDHCP); // they have nothing in common, but use the same command
   bool mDNS(const char* hostname, const char* serverName, uint16_t serverPort);
   bool resolve(const char* hostname, IPAddress& result);
