@@ -17,6 +17,7 @@
   along with this library.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include <Arduino.h>
 #include "WiFiEspAtBuffStream.h"
 #include "utility/EspAtDrv.h"
 
