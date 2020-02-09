@@ -3,7 +3,9 @@
 
   the example demonstrates the write(file) and write() with callback functions
 
-  this example doesn't fit into 2 kB SRAM, so it can't be run on Uno, Nano, Mini
+  This example doesn't fit into 2 kB SRAM of ATmega328p,
+  so it can't be run on Uno, classic Nano or Mini
+  It works perfect on Mega, Nano Every, Nano 33 BLE, MKR, Zero, M0, ...
 
   created in December 2019 for WiFiEspAT library
   by Juraj Andrassy https://github.com/jandrassy
@@ -113,7 +115,7 @@ void loop() {
             if (entry.isDirectory()) {
               chunked.println(F("/</a><br>"));
             } else  {
-              chunked.printf(F("</a> (%ld b)<br>\r\n"), entry.size());
+              chunked.printf(F("</a> (%ld B)<br>\r\n"), entry.size());
             }
             entry.close();
           }

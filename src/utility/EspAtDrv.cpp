@@ -20,6 +20,12 @@
 #include "EspAtDrv.h"
 #include "EspAtDrvLogging.h"
 
+#if defined(ARDUINO_ARCH_STM32F1) || defined(ARDUINO_ARCH_STM32F4)
+#include <itoa.h>
+#define strcmp_P(a, b) strcmp((a), (b))
+#define strncmp_P(a, b, n) strncmp((a), (b), (n))
+#endif
+
 //#define ESPATDRV_ASSUME_FLOW_CONTROL
 
 const uint8_t WIFI_MODE_STA = 0b01;
