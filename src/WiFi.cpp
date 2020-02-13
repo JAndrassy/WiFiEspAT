@@ -362,6 +362,10 @@ EspAtDrvError WiFiClass::getLastDriverError() {
   return EspAtDrv.getLastErrorCode();
 }
 
+bool WiFiClass::sleepMode(EspAtSleepMode mode) {
+  return EspAtDrv.sleepMode(mode);
+}
+
 bool WiFiClass::deepSleep() {
   return EspAtDrv.deepSleep();
 }

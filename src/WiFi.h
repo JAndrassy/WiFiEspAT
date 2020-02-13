@@ -127,6 +127,7 @@ public:
   const char* firmwareVersion(char* buffer = fwVersion);
   EspAtDrvError getLastDriverError();
 
+  bool sleepMode(EspAtSleepMode mode);
   bool deepSleep();
   bool reset(uint8_t resetPin);
 

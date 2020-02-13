@@ -106,6 +106,7 @@ public:
   unsigned long sntpTime();
   bool ping(const char* hostname);
 
+  bool sleepMode(EspAtSleepMode mode);
   bool deepSleep();
 
   void ip2str(const IPAddress& ip, char* s);

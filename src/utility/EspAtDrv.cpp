@@ -1057,6 +1057,17 @@ bool EspAtDrvClass::ping(const char* hostname) {
   return sendCommand();
 }
 
+bool EspAtDrvClass::sleepMode(EspAtSleepMode mode) {
+  maintain();
+
+  LOG_INFO_PRINT_PREFIX();
+  LOG_INFO_PRINTLN(F("set sleep mode"));
+
+  cmd->print(F("AT+SLEEP="));
+  cmd->print(mode);
+  return sendCommand();
+}
+
 bool EspAtDrvClass::deepSleep() {
   maintain();
 

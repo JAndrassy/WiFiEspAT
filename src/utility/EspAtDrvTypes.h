@@ -42,6 +42,12 @@ enum struct EspAtDrvError {
   UDP_TIMEOUT
 };
 
+enum EspAtSleepMode {
+  WIFI_NONE_SLEEP = 0,
+  WIFI_LIGHT_SLEEP = 1,
+  WIFI_MODEM_SLEEP = 2
+};
+
 struct WiFiApData {
    char ssid[33];
    uint8_t bssid[6];

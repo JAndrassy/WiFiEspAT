@@ -134,6 +134,7 @@ This library implements Arduino WiFi networking API. The last version of this AP
 * `startMDNS` to execute AT+MDNS. refer to AT reference for parameters
 * `sntp` - to enable and configure SNTP time zone and servers. see SNTPTime.ino example
 * `reset` - to reset or wake-up the esp8266. see DeepSleepAndHwReset.ino example
+* `sleepMode`- to set the level of automatic sleep mode. possible modes are WIFI_NONE_SLEEP, WIFI_LIGHT_SLEEP and WIFI_MODEM_SLEEP
 * `deepSleep`- to turn-off the esp8266. see DeepSleepAndHwReset.ino example
 * `ping` doesn't have the ttl parameter and returns only true or false
 
