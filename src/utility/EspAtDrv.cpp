@@ -663,14 +663,13 @@ bool EspAtDrvClass::close(uint8_t linkId, bool abort) {
   LOG_INFO_PRINTLN(linkId);
 
   LinkInfo& link = linkInfo[linkId];
+  link.available = 0;
   if (!link.isConnected()) {
-    LOG_WARN_PRINT_PREFIX();
-    LOG_WARN_PRINTLN(F("link is not active"));
-    lastErrorCode = EspAtDrvError::LINK_NOT_ACTIVE;
+    LOG_INFO_PRINT_PREFIX();
+    LOG_INFO_PRINTLN(F("link is already closed"));
     return true;
   }
   link.flags |= LINK_CLOSING;
-  link.available = 0;
   if (abort) {
     cmd->print(F("AT+CIPCLOSEMODE="));
     cmd->print(linkId);
@@ -1096,7 +1095,7 @@ uint8_t EspAtDrvClass::freeLinkId() {
     LinkInfo& link = linkInfo[linkId];
     if (!link.isConnected() && !link.isClosing()) {
       LOG_INFO_PRINT_PREFIX();
-      LOG_INFO_PRINT(F("free linkId "));
+      LOG_INFO_PRINT(F("free linkId is "));
       LOG_INFO_PRINTLN(linkId);
       return linkId;
     }
