@@ -17,13 +17,16 @@
   along with this library.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef _WIFI_H_
-#define _WIFI_H_
+#ifndef _WIFI_ESP_AT_H_
+#define _WIFI_ESP_AT_H_
 
 #include <Arduino.h>
 #include <IPAddress.h>
 #include "WiFiEspAtConfig.h"
 #include "utility/EspAtDrvTypes.h"
+#include "WiFiClient.h"
+#include "WiFiServer.h"
+#include "WiFiUdp.h"
 
 enum {
   WL_NO_SHIELD = 255,
