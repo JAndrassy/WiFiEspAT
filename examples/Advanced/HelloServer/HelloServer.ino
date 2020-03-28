@@ -15,21 +15,27 @@
 
 */
 
+#define USE_WIFI_NINA false //true
+
+#if !USE_WIFI_NINA
 #include <WiFiEspAT.h>
-#define USE_WIFI_NINA 0
+#endif
+
 #include <WiFiWebServer.h>
 
 WiFiWebServer server(80);
 
 const int led = LED_BUILTIN;
 
-void handleRoot() {
+void handleRoot() 
+{
   digitalWrite(led, 1);
   server.send(200, "text/plain", "hello from Arduino" );
   digitalWrite(led, 0);
 }
 
-void handleNotFound() {
+void handleNotFound() 
+{
   digitalWrite(led, 1);
   String message = "File Not Found\n\n";
   message += "URI: ";
@@ -46,16 +52,20 @@ void handleNotFound() {
   digitalWrite(led, 0);
 }
 
-void setup(void) {
+void setup(void) 
+{
   pinMode(led, OUTPUT);
   digitalWrite(led, 0);
   Serial.begin(115200);
   while (!Serial);
 
-  Serial1.begin(115200);
+#if !USE_WIFI_NINA
+  Serial1.begin(115200); 
   WiFi.init(Serial1);
+#endif
 
-  if (WiFi.status() == WL_NO_MODULE) {
+  if (WiFi.status() == WL_NO_MODULE) 
+  {
     Serial.println("Communication with WiFi module failed!");
     // don't continue
     while (true);
@@ -63,7 +73,8 @@ void setup(void) {
   Serial.println("");
 
   // Wait for connection to Wifi network set with the SetupWiFiConnection sketch
-  while (WiFi.status() != WL_CONNECTED) {
+  while (WiFi.status() != WL_CONNECTED) 
+  {
     delay(500);
     Serial.print(".");
   }
@@ -85,6 +96,7 @@ void setup(void) {
   Serial.println("HTTP server started");
 }
 
-void loop(void) {
+void loop(void) 
+{
   server.handleClient();
 }
