@@ -42,6 +42,8 @@ public:
 
   virtual int connect(IPAddress ip, uint16_t port);
   virtual int connect(const char *host, uint16_t port);
+  int connectSSL(IPAddress ip, uint16_t port);
+  int connectSSL(const char *host, uint16_t port);
   virtual void stop();
           void abort();
 

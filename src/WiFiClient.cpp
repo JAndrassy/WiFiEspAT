@@ -44,6 +44,21 @@ int WiFiClient::connect(IPAddress ip, uint16_t port) {
   return connect(s, port);
 }
 
+int WiFiClient::connectSSL(const char* host, uint16_t port) {
+  if (linkId != NO_LINK) {
+    stop();
+  }
+  linkId = EspAtDrv.connect("SSL", host, port);
+  stream.setLinkId(linkId);
+  return (linkId != NO_LINK);
+}
+
+int WiFiClient::connectSSL(IPAddress ip, uint16_t port) {
+  char s[16];
+  EspAtDrv.ip2str(ip, s);
+  return connectSSL(s, port);
+}
+
 void WiFiClient::stop() {
   if (linkId == NO_LINK)
     return;

@@ -3,7 +3,7 @@
 
 This library creates standard Arduino WiFi networking API over ESP8266 AT commands. The Arduino WiFi networking API was established by Arduino WiFi library and enhanced by Arduino WiFi101 and Arduino WiFiNINA library.
 
-This library is fast and reliable. It can communicate with AT firmware at high baud rates without flow control, limited only by reliability of UART at chosen speed. But it doesn't support SSL (https) secure networking for now.
+This library is fast and reliable. It can communicate with AT firmware at high baud rates without flow control, limited only by reliability of UART at chosen speed. But with standard AT firmware it doesn't support SSL (https) secure networking for now.
 
 The library is for all Arduino MCU architectures.
 
@@ -53,7 +53,7 @@ Note: The older WiFiEsp library referenced the AT firmware version by SDK versio
 
 ## Limitations
 
-The new passive receive mode of the AT firmware is not supported for UDP and secure connection (SSL) yet. For this reason UDP received message size is limited to configured buffer size and secure connection (SSL, https) is not supported. You can use the older WiFiEsp library for https.
+The new passive receive mode of the AT firmware is not supported for UDP and secure connection (SSL) yet. For this reason UDP received message size is limited to configured buffer size and secure connection (SSL, https) is not supported with standard AT firmware.
 
 The AT firmware is limited to one TCP server. The AT LoBo customized firmware adds 3 more TCP servers, but without the support for the passive receive mode. So this library can't use them.
 
@@ -71,6 +71,8 @@ esptool.py write_flash --flash_size 2MB-c1 0x0 boot_v1.7.bin 0x01000 at/1024+102
 ```
 
 GitHub user loboris (Boris Lovosevic) builds customized versions of AT firmware with SDK 3 for all flash sizes. You can download the files from his [ESP8266_AT_LoBo GitHub repository](https://github.com/loboris/ESP8266_AT_LoBo). If you can't run his flash.sh utility, then for 1 MB flash you can Flash Download Tool with bin/upgrade/esp8266_AT_1_2.bin file and the right addresses for 1 MB flash: boot_v1.7.bin on 0x0; esp8266_AT_1_2.bin on 0x01000; esp_init_data_default.bin on 0xfc000 and blank.bin on 0x7e000 and 0xfe000.
+
+Jiri Bilek created [an alternative AT firmware implementation](https://github.com/JiriBilek/ESP_ATMod) over esp8266 Arduino core and WiFi library. This supports SSL connection in passive mode with this library. Please, be aware of the limitations of Jiri's firmware.
 
 AT firmware resources:
 * [the Espressif binaries](https://www.espressif.com/en/support/download/at?keys=&field_type_tid%5B%5D=14) - only AT version 1.7 or 1.7.x is good for this library
@@ -140,11 +142,11 @@ This library implements Arduino WiFi networking API. The last version of this AP
 
 ### the WiFiClient class differences
 
-* `connectSSL` is not implemented. It will be implemented as soon the AT firmware supports passive mode for SSL connection.
+* `connectSSL` is not supported with standard AT firmware
 * `write(file)` variant of write function for efficient sending of SD card file. see SDWebServer.ino example 
 * `write(callback)` variant of write function for efficient sending with a callback function. see SDWebServer.ino example 
 * `abort` closes the TCP connection without waiting for the remote side 
-* `getLinkId` returns the coresponding linkId of AT firmware for advanced use. It returns WIFIESPAT_NO_LINK if the client is unconnected. The valid range is from 0 to WIFIESPAT_LINKS_COUNT. 
+* `getLinkId` returns the corresponding linkId of AT firmware for advanced use. It returns WIFIESPAT_NO_LINK if the client is unconnected. The valid range is from 0 to WIFIESPAT_LINKS_COUNT. 
 
 ### the WiFiServer class differences
 

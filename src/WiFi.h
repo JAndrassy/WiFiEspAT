@@ -27,6 +27,7 @@
 #include "WiFiClient.h"
 #include "WiFiServer.h"
 #include "WiFiUdp.h"
+#include "WiFiSSLClient.h"
 
 enum {
   WL_NO_SHIELD = 255,
