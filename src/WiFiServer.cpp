@@ -47,3 +47,8 @@ WiFiClient WiFiServer::available(bool accept) {
   }
   return WiFiClient();
 }
+
+WiFiServer::operator bool() {
+  return (state != CLOSED);
+}
+

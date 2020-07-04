@@ -31,6 +31,7 @@ public:
   uint8_t status();
   WiFiClient available(bool accept = false);
   WiFiClient accept() {return available(true);}
+  virtual operator bool();
 
 private:
   uint16_t port;
