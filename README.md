@@ -26,7 +26,7 @@ The library is for all Arduino MCU architectures.
 
 ## Getting started
 
-* Put AT firmware version 1.7.x into the esp8266 you want to use with the WiFiEspAT library. [ESP8266_AT_LoBo repository](https://github.com/loboris/ESP8266_AT_LoBo) has binaries for all flash sizes. Make sure the firmware is working and returning OK to test command "AT".
+* Put AT firmware version 1.7.x into the esp8266 you want to use with the WiFiEspAT library. Make sure the firmware is working and returning OK to test command "AT".
 
 
 * Wire the esp8266 module to Serial1 of your Arduino. Wire RX to TX. If your Arduino doesn't have Serial1, wire the esp8266 modules to pins 6 as RX and 7 as TX for SoftwareSerial.
@@ -46,7 +46,7 @@ The library is for all Arduino MCU architectures.
 
 ## Why a new WiFiEsp library?
 
-This library uses the new passive receive mode implemented in AT firmware 1.7.0 (SDK 3). The [older WiFiEsp library](https://github.com/bportaluri/WiFiEsp) can't do much with larger data received. Without the passive receive mode, the AT firmware sends all the data at once and the serial RX buffer overflows. It is hard to receive more data over network with AT firmware without UART hardware flow control and Arduino AVR boards don't have flow control and simple esp8266 modules don't have the flow control pins exposed.
+This library uses the new passive receive mode implemented in AT firmware 1.7 (SDK 3). The [older WiFiEsp library](https://github.com/bportaluri/WiFiEsp) can't do much with larger data received. Without the passive receive mode, the AT firmware sends all the data at once and the serial RX buffer overflows. It is hard to receive more data over network with AT firmware without UART hardware flow control and Arduino AVR boards don't have flow control and simple esp8266 modules don't have the flow control pins exposed.
 
 Note: The older WiFiEsp library referenced the AT firmware version by SDK version. This library reports AT commands version.
 
@@ -55,14 +55,14 @@ Note: The older WiFiEsp library referenced the AT firmware version by SDK versio
 
 The new passive receive mode of the AT firmware is not supported for UDP and secure connection (SSL) yet. For this reason UDP received message size is limited to configured buffer size and secure connection (SSL, https) is not supported with standard AT firmware.
 
-The AT firmware is limited to one TCP server. The AT LoBo customized firmware adds 3 more TCP servers, but without the support for the passive receive mode. So this library can't use them.
+The AT firmware is limited to one TCP server.
 
 
 ## AT firmware versions
 
 This library requires esp8266 AT firmware 1.7.x. AT firmware 1.7.x is build on Espressif NonOS SDK 3. You can use the CheckFirmware sketch from examples Tools to check the version of the AT firmware. 
 
-Version 2.0 of the esp8266 AT firmware can't be used with this library. It is different because it is based on ESP32 AT firmware and doesn't support passive receive mode.
+Note: Version 2.0 of the esp8266 AT firmware can't be used with this library. It is different because it is based on ESP32 AT firmware and doesn't support passive receive mode.
 
 The Espressif AT binary is built for 2MB-c1 flash partitioning. Flash Download Tool corrects it for 4 MB flash, but for esptool you must use the `--flash_size 2MB-c1` option and the corresponding addresses.
 
@@ -70,12 +70,20 @@ The Espressif AT binary is built for 2MB-c1 flash partitioning. Flash Download T
 esptool.py write_flash --flash_size 2MB-c1 0x0 boot_v1.7.bin 0x01000 at/1024+1024/user1.2048.new.5.bin 0x1fb000 blank.bin 0x1fc000 esp_init_data_default_v08.bin 0xfe000 blank.bin 0x1fe000 blank.bin
 ```
 
-GitHub user loboris (Boris Lovosevic) builds customized versions of AT firmware with SDK 3 for all flash sizes. You can download the files from his [ESP8266_AT_LoBo GitHub repository](https://github.com/loboris/ESP8266_AT_LoBo). If you can't run his flash.sh utility, then for 1 MB flash you can Flash Download Tool with bin/upgrade/esp8266_AT_1_2.bin file and the right addresses for 1 MB flash: boot_v1.7.bin on 0x0; esp8266_AT_1_2.bin on 0x01000; esp_init_data_default.bin on 0xfc000 and blank.bin on 0x7e000 and 0xfe000.
+The AT 1.7.4 version has bin file for flashing to 1 MB flash.
+
+```
+esptool.py write_flash --flash_size 1MB 0x0 boot_v1.7.bin 0x01000 at/512+512/user1.1024.new.2.bin 0xfb000 blank.bin 0xfc000 esp_init_data_default_v08.bin 0xfe000 blank.bin 0x7e000 blank.bin
+```
+
+For some esp8266 modules you will have to add `--flash_mode dout` before `--flash_size`.
+
+GitHub user loboris (Boris Lovosevic) builds customized versions of AT firmware with SDK 3 for all flash sizes. You can download the files from his [ESP8266_AT_LoBo GitHub repository](https://github.com/loboris/ESP8266_AT_LoBo). Run his flash.sh utility to flash the correct binary.
 
 Jiri Bilek created [an alternative AT firmware implementation](https://github.com/JiriBilek/ESP_ATMod) over esp8266 Arduino core and WiFi library. This supports SSL connection in passive mode with this library. Please, be aware of the limitations of Jiri's firmware.
 
 AT firmware resources:
-* [the Espressif binaries](https://www.espressif.com/en/support/download/at?keys=&field_type_tid%5B%5D=14) - only AT version 1.7 or 1.7.x is good for this library
+* [the Espressif binaries](https://www.espressif.com/en/support/download/at?keys=&field_type_tid%5B%5D=14) - only AT versions 1.7.x are good for this library
 * [AT reference](https://www.espressif.com/en/support/download/overview?keys=AT+Instruction+Set&field_type_tid%5B%5D=14) - it contains firmware flashing instructions too
 * [Flash Download Tool](https://www.espressif.com/en/support/download/other-tools?keys=&field_type_tid%5B%5D=14) It is Windows only, but can detect settings of your esp8266 and apply them to the flashed settings binary
 * [esptool.py installation instructions](https://github.com/espressif/esptool#installation--dependencies)
