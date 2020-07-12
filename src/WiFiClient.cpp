@@ -118,9 +118,7 @@ WiFiClient::operator bool() {
 }
 
 uint8_t WiFiClient::connected() {
-  if (available()) // Arduino WiFi library examples expect connected true while data are available
-    return true;
-  return (status() == ESTABLISHED);
+  return (status() == ESTABLISHED || available()); // Arduino WiFi library examples expect connected true while data are available
 }
 
 uint8_t WiFiClient::status() {
