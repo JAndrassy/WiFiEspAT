@@ -69,7 +69,7 @@ size_t WiFiUdpSender::write(SendCallbackFnc callback) {
   return stream.write(callback);
 }
 
-IPAddress WiFiUdpSender::remoteIP() {
+IPAddress WiFiUDP::remoteIP() {
   IPAddress ip;
   uint16_t port = 0;
   if (linkId != NO_LINK) {
@@ -78,7 +78,7 @@ IPAddress WiFiUdpSender::remoteIP() {
   return ip;
 }
 
-uint16_t WiFiUdpSender::remotePort() {
+uint16_t WiFiUDP::remotePort() {
   IPAddress ip;
   uint16_t port = 0;
   if (linkId != NO_LINK) {
@@ -118,8 +118,6 @@ int WiFiUDP::parsePacket() {
 }
 
 int WiFiUDP::available() {
-  if (linkId == NO_LINK)
-    return 0;
   return (rxBufferLength - rxBufferIndex);
 }
 
@@ -137,6 +135,7 @@ int WiFiUDP::read(uint8_t* data, size_t size) {
     l = size;
   }
   memcpy(data, rxBuffer + rxBufferIndex, l);
+  rxBufferIndex += l;
   return l;
 }
 
@@ -171,8 +170,6 @@ int WiFiUDP::beginPacket(const char *host, uint16_t port) {
 int WiFiUDP::endPacket() {
   if (!listening)
     return WiFiUdpSender::endPacket();
-  if (linkId == NO_LINK)
-    return 0;
   flush();
   stream.reset();
   return !getWriteError();

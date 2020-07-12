@@ -29,34 +29,35 @@ WiFiClient::WiFiClient(uint8_t _linkId) : stream(rxBuffer, sizeof(rxBuffer), txB
   stream.setLinkId(linkId);
 }
 
-int WiFiClient::connect(const char* host, uint16_t port) {
+int WiFiClient::connect(bool ssl, const char* host, uint16_t port) {
   if (linkId != NO_LINK) {
     stop();
   }
-  linkId = EspAtDrv.connect("TCP", host, port);
+  linkId = EspAtDrv.connect(ssl ? "SSL" : "TCP", host, port);
   stream.setLinkId(linkId);
   return (linkId != NO_LINK);
+}
+
+int WiFiClient::connect(bool ssl, IPAddress ip, uint16_t port) {
+  char s[16];
+  EspAtDrv.ip2str(ip, s);
+  return connect(ssl, s, port);
+}
+
+int WiFiClient::connect(const char* host, uint16_t port) {
+  return connect(false, host, port);
 }
 
 int WiFiClient::connect(IPAddress ip, uint16_t port) {
-  char s[16];
-  EspAtDrv.ip2str(ip, s);
-  return connect(s, port);
+  return connect(false, ip, port);
 }
 
 int WiFiClient::connectSSL(const char* host, uint16_t port) {
-  if (linkId != NO_LINK) {
-    stop();
-  }
-  linkId = EspAtDrv.connect("SSL", host, port);
-  stream.setLinkId(linkId);
-  return (linkId != NO_LINK);
+  return connect(true, host, port);
 }
 
 int WiFiClient::connectSSL(IPAddress ip, uint16_t port) {
-  char s[16];
-  EspAtDrv.ip2str(ip, s);
-  return connectSSL(s, port);
+  return connect(true, ip, port);
 }
 
 void WiFiClient::stop() {
@@ -71,7 +72,6 @@ void WiFiClient::stop() {
 void WiFiClient::abort() {
   if (linkId == NO_LINK)
     return;
-  flush();
   stream.reset();
   EspAtDrv.close(linkId, true);
   linkId = NO_LINK;
@@ -114,13 +114,11 @@ int WiFiClient::peek() {
 }
 
 WiFiClient::operator bool() {
-  return (linkId != NO_LINK);
+  return connected();
 }
 
 uint8_t WiFiClient::connected() {
-  if (available()) // Arduino WiFi library examples expect connected true while data are available
-    return true;
-  return (status() == ESTABLISHED);
+  return (status() == ESTABLISHED || available()); // Arduino WiFi library examples expect connected true while data are available
 }
 
 uint8_t WiFiClient::status() {

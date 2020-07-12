@@ -806,7 +806,7 @@ size_t EspAtDrvClass::sendData(uint8_t linkId, const uint8_t data[], size_t len,
   cmd->print(linkId);
   cmd->print(',');
   cmd->print(len);
-  if (udpPort != 0) {
+  if (udpHost != nullptr) {
     cmd->print(F(",\""));
     cmd->print(udpHost);
     cmd->print(F("\","));
@@ -851,7 +851,7 @@ size_t EspAtDrvClass::sendData(uint8_t linkId, Stream& file, const char* udpHost
   }
   size_t len = 0;
   while (file.available()) {
-    int l = file.available();
+    size_t l = file.available();
     if (l > MAX_SEND_LENGTH) {
       l = MAX_SEND_LENGTH;
     }
@@ -859,7 +859,7 @@ size_t EspAtDrvClass::sendData(uint8_t linkId, Stream& file, const char* udpHost
     cmd->print(linkId);
     cmd->print(',');
     cmd->print(l);
-    if (udpPort != 0) {
+    if (udpHost != nullptr) {
       cmd->print(F(",\""));
       cmd->print(udpHost);
       cmd->print(F("\","));
@@ -867,7 +867,7 @@ size_t EspAtDrvClass::sendData(uint8_t linkId, Stream& file, const char* udpHost
     }
     if (!sendCommand(PSTR(">")))
       return 0;
-    for (int i = 0; i < l; i++) {
+    for (size_t i = 0; i < l; i++) {
       serial->write(file.read());
     }
     if (!readRX(PSTR("Recv ")))
@@ -908,7 +908,7 @@ size_t EspAtDrvClass::sendData(uint8_t linkId, SendCallbackFnc callback, const c
   cmd->print(linkId);
   cmd->print(',');
   cmd->print(MAX_SEND_LENGTH);
-  if (udpPort != 0) {
+  if (udpHost != nullptr) {
     cmd->print(F(",\""));
     cmd->print(udpHost);
     cmd->print(F("\","));
@@ -1093,7 +1093,7 @@ uint8_t EspAtDrvClass::freeLinkId() {
   maintain();
   for (int linkId = LINKS_COUNT - 1; linkId >= 0; linkId--) {
     LinkInfo& link = linkInfo[linkId];
-    if (!link.isConnected() && !link.isClosing()) {
+    if (!link.isConnected() && !link.isClosing() && !link.available) {
       LOG_INFO_PRINT_PREFIX();
       LOG_INFO_PRINT(F("free linkId is "));
       LOG_INFO_PRINTLN(linkId);

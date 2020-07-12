@@ -44,8 +44,8 @@ public:
 
   using Print::write;
 
-  virtual IPAddress remoteIP();
-  virtual uint16_t remotePort();
+  virtual IPAddress remoteIP() {return IPAddress();}
+  virtual uint16_t remotePort() {return 0;}
 
   // Listening for UDP packets - not implemented here
   virtual uint8_t begin(uint16_t) {return 0;}
@@ -58,8 +58,6 @@ public:
   virtual int read(uint8_t* buffer, size_t len) { (void) buffer; (void) len; return 0;}
   virtual int read(char* buffer, size_t len) { (void) buffer; (void) len; return 0;}
   virtual int peek() { return -1;}
-
-  uint8_t getLinkId() { return linkId; }
 
 protected:
 
@@ -94,6 +92,9 @@ public:
   using WiFiUdpSender::beginPacket; // for version with IPAddress
   virtual int endPacket();
   using Print::write;
+
+  virtual IPAddress remoteIP();
+  virtual uint16_t remotePort();
 
 protected:
   virtual uint8_t readRxData(Stream* serial, size_t len); // EspAtDrvUdpDataCallback implementation

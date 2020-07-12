@@ -154,7 +154,6 @@ This library implements Arduino WiFi networking API. The last version of this AP
 * `write(file)` variant of write function for efficient sending of SD card file. see SDWebServer.ino example 
 * `write(callback)` variant of write function for efficient sending with a callback function. see SDWebServer.ino example 
 * `abort` closes the TCP connection without waiting for the remote side 
-* `getLinkId` returns the corresponding linkId of AT firmware for advanced use. It returns WIFIESPAT_NO_LINK if the client is unconnected. The valid range is from 0 to WIFIESPAT_LINKS_COUNT. 
 
 ### the WiFiServer class differences
 
@@ -174,7 +173,6 @@ You can use WiFiUdpSender class if you only send messages. See the UdpSender.ino
 
 * `beginMulticast` is not implemented
 * `write(callback)` variant of write function for efficient sending with a callback function 
-* `getLinkId` returns the corresponding linkId of AT firmware for advanced use. It returns WIFIESPAT_NO_LINK if the UDP is not initialized. The valid range is from 0 to WIFIESPAT_LINKS_COUNT.
 
 ## Logging
 
@@ -230,9 +228,3 @@ The AT firmware sends notifications about different events without the host requ
 If you can setup for the WiFiEspAT library a Serial connection with flow control, you can uncomment `#define ESPATDRV_ASSUME_FLOW_CONTROL` in EspAtDrv.cpp or define ESPATDRV_ASSUME_FLOW_CONTROL in boards.local.txt for the board. This will remove the polling of connections state.
 
 The SerialPassthrough sketch from WiFiEspAT/Tools in IDE Example menu has optional configuration of SAMD SERCOM3 to create 'Serial' interface with flow control. The esp8266 CTS pin is pin 13. The example has pin 2 of MKRZERO as RTS pin. To activate flow control on the AT firmware side, use the AT+UART command with last parameter 2 or 3.
-
-
-
-
-
-

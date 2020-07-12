@@ -98,9 +98,9 @@ size_t WiFiEspAtBuffStream::write(SendCallbackFnc callback) {
 }
 
 int WiFiEspAtBuffStream::available() {
-  if (linkId == NO_LINK)
-    return 0;
   size_t a = (rxBufferLength - rxBufferIndex);
+  if (linkId == NO_LINK)
+    return a;
   if (a == 0) {
     a = EspAtDrv.availData(linkId);
   }

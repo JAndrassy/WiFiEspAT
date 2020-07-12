@@ -63,14 +63,15 @@ public:
   virtual uint8_t connected();
   uint8_t status();
 
-  virtual IPAddress remoteIP();
-  virtual uint16_t remotePort();
+  IPAddress remoteIP();
+  uint16_t remotePort();
 
   using Print::write;
 
-  uint8_t getLinkId() { return linkId; }
-
 private:
+  int connect(bool ssl, IPAddress ip, uint16_t port);
+  int connect(bool ssl, const char *host, uint16_t port);
+
   uint8_t linkId;
 
   byte rxBuffer[WIFIESPAT_CLIENT_RX_BUFFER_SIZE];

@@ -18,7 +18,7 @@ SoftwareSerial Serial1(6, 7); // RX, TX
 #define AT_BAUD_RATE 115200
 #endif
 
-const byte TIME_ZONE = 2; // UTC + 2
+const int8_t TIME_ZONE = 2; // UTC + 2
 
 void setup() {
 
