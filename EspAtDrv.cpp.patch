@@ -1,0 +1,112 @@
+--- EspAtDrv.cpp.orig   2020-07-12 20:11:50.000000000 +0200
++++ EspAtDrv.cpp        2020-07-12 20:49:19.000000000 +0200
+@@ -19,6 +19,11 @@
+
+ #include "EspAtDrv.h"
+ #include "EspAtDrvLogging.h"
++// #define useLoBoFirmware
++#ifndef useLoBoFirmware
++// this is for using SNTP with ESP
++#include "TimeLib.h"     // https://github.com/PaulStoffregen/Time
++#endif
+
+ #if defined(ARDUINO_ARCH_STM32F1) || defined(ARDUINO_ARCH_STM32F4)
+ #include <itoa.h>
+@@ -1029,6 +1034,7 @@
+   return sendCommand();
+ }
+
++#ifdef useLoBoFirmware
+ unsigned long EspAtDrvClass::sntpTime() {
+   maintain();
+
+@@ -1043,6 +1049,89 @@
+   readOK();
+   return res;
+ }
++#else
++// use standard EspressIF firmware v1.7+
++// src is from http://nopnop2002.webcrow.jp/ESP-AT-Firmware/ESP-AT-Firmware-43.html
++int LeapYear(int yyyy) {
++  if (yyyy % 4 == 0) {
++    if (yyyy % 100 == 0) {
++      if (yyyy % 400 == 0) {
++        return 1;
++      } else {
++        return 0;
++      }
++    } else {
++      return 1;
++    }
++  } else {
++    return 0;
++  }
++}
++
++unsigned long makeTime(char* str) {
++  char c_dow[10];
++  char c_month[10];
++  int year,month,day,hour,minute,second,dow;
++  const char *t_dow[] = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
++  const char *t_month[] = {"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
++
++  sscanf(str,"%s %s %d %d:%d:%d %d",c_dow,c_month,&day,&hour,&minute,&second,&year);
++
++  for(dow=0;dow<7;dow++) {
++    if (strcmp(c_dow,t_dow[dow]) == 0) break;
++  }
++
++  for(month=1;month<13;month++) {
++    if (strcmp(c_month,t_month[month-1]) == 0) break;
++  }
++
++  // API starts months from 1, this array starts from 0
++  static  const uint8_t monthDays[]={31,28,31,30,31,30,31,31,30,31,30,31};
++
++  unsigned long seconds;
++  int i;
++
++  // seconds from 1970 till 1 jan 00:00:00 of the given year
++  seconds= (year-1970)*(SECS_PER_DAY * 365);
++  for (i = 1970; i < year; i++) {
++    if (LeapYear(i)) {
++      seconds +=  SECS_PER_DAY;   // add extra days for leap years
++     }
++  }
++
++  // add days for this year, months start from 1
++  for (i = 1; i < month; i++) {
++    if ( (i == 2) && LeapYear(year)) {
++      seconds += SECS_PER_DAY * 29;
++    } else {
++      seconds += SECS_PER_DAY * monthDays[i-1];  //monthDay array starts from 0
++    }
++  }
++  seconds+= (day-1) * SECS_PER_DAY;
++  seconds+= hour * SECS_PER_HOUR;
++  seconds+= minute * SECS_PER_MIN;
++  seconds+= second;
++
++  return seconds;
++}
++
++unsigned long EspAtDrvClass::sntpTime() {
++  maintain();
++
++  LOG_INFO_PRINT_PREFIX();
++  LOG_INFO_PRINTLN(F("SNTP time"));
++
++  cmd->print(F("AT+CIPSNTPTIME?")); // AT Stanard Espressif firmware command v1.7+
++  if (!sendCommand(PSTR("+CIPSNTPTIME")))
++    return 0;
++
++  char* tok = strtok(buffer + strlen("+CIPSNTPTIME:"), ",");
++
++  unsigned long res = makeTime(tok);
++  readOK();
++  return res;
++}
++#endif
+
+ bool EspAtDrvClass::ping(const char* hostname) {
+   maintain();
