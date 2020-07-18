@@ -19,23 +19,31 @@
 
 #include "utility/EspAtDrv.h"
 #include "WiFiClient.h"
+#include "WiFiEspAtBuffManager.h"
 
-WiFiClient::WiFiClient() : stream(rxBuffer, sizeof(rxBuffer), txBuffer, sizeof(txBuffer)) {
-  linkId = NO_LINK;
+WiFiClient::WiFiClient() {
 }
 
-WiFiClient::WiFiClient(uint8_t _linkId) : stream(rxBuffer, sizeof(rxBuffer), txBuffer, sizeof(txBuffer)) {
-  linkId = _linkId;
-  stream.setLinkId(linkId);
+WiFiClient::WiFiClient(uint8_t linkId, uint16_t serverPort) {
+  stream = WiFiEspAtBuffManager.getBuffStream(linkId, serverPort, WIFIESPAT_CLIENT_RX_BUFFER_SIZE, WIFIESPAT_CLIENT_TX_BUFFER_SIZE);
+  if (!stream) {
+    EspAtDrv.close(linkId);
+  }
 }
 
 int WiFiClient::connect(bool ssl, const char* host, uint16_t port) {
-  if (linkId != NO_LINK) {
+  if (stream) {
     stop();
   }
-  linkId = EspAtDrv.connect(ssl ? "SSL" : "TCP", host, port);
-  stream.setLinkId(linkId);
-  return (linkId != NO_LINK);
+  uint8_t linkId = EspAtDrv.connect(ssl ? "SSL" : "TCP", host, port);
+  if (linkId == NO_LINK)
+    return false;
+  stream = WiFiEspAtBuffManager.getBuffStream(linkId, 0, WIFIESPAT_CLIENT_RX_BUFFER_SIZE, WIFIESPAT_CLIENT_TX_BUFFER_SIZE);
+  if (!stream) {
+    EspAtDrv.close(linkId);
+    return false;
+  }
+  return true;
 }
 
 int WiFiClient::connect(bool ssl, IPAddress ip, uint16_t port) {
@@ -61,56 +69,72 @@ int WiFiClient::connectSSL(IPAddress ip, uint16_t port) {
 }
 
 void WiFiClient::stop() {
-  if (linkId == NO_LINK)
+  if (!stream)
     return;
   flush();
-  stream.reset();
-  EspAtDrv.close(linkId);
-  linkId = NO_LINK;
+  stream->close();
+  stream = nullptr;
 }
 
 void WiFiClient::abort() {
-  if (linkId == NO_LINK)
+  if (!stream)
     return;
-  stream.reset();
-  EspAtDrv.close(linkId, true);
-  linkId = NO_LINK;
+  stream->close(true);
+  stream = nullptr;
 }
 
 size_t WiFiClient::write(uint8_t b) {
-  return stream.write(b);
+  if (!stream)
+    return 0;
+  return stream->write(b);
 }
 
 size_t WiFiClient::write(const uint8_t *data, size_t length) {
-  return stream.write(data, length);
+  if (!stream)
+    return 0;
+  return stream->write(data, length);
 }
 
 void WiFiClient::flush() {
-  stream.flush();
+  if (!stream)
+    return;
+  stream->flush();
 }
 
 size_t WiFiClient::write(Stream& file) {
-  return stream.write(file);
+  if (!stream)
+    return 0;
+  return stream->write(file);
 }
 
 size_t WiFiClient::write(SendCallbackFnc callback) {
-  return stream.write(callback);
+  if (!stream)
+    return 0;
+  return stream->write(callback);
 }
 
 int WiFiClient::available() {
-  return stream.available();
+  if (!stream)
+    return 0;
+  return stream->available();
 }
 
 int WiFiClient::read() {
-  return stream.read();
+  if (!stream)
+    return -1;
+  return stream->read();
 }
 
 int WiFiClient::read(uint8_t* data, size_t size) {
-  return stream.read(data, size);
+  if (!stream)
+    return 0;
+  return stream->read(data, size);
 }
 
 int WiFiClient::peek() {
-  return stream.peek();
+  if (!stream)
+    return -1;
+  return stream->peek();
 }
 
 WiFiClient::operator bool() {
@@ -118,23 +142,29 @@ WiFiClient::operator bool() {
 }
 
 uint8_t WiFiClient::connected() {
-  return (status() == ESTABLISHED || available()); // Arduino WiFi library examples expect connected true while data are available
+  if (!stream)
+    return false;
+  if (stream->connected() || available()) // Arduino WiFi library examples expect connected true while data are available
+    return true;
+  // link is closed and all data from stream are read
+  stream->free();
+  stream = nullptr;
+  return false;
 }
 
 uint8_t WiFiClient::status() {
-  if (linkId == NO_LINK)
+  if (!stream)
     return CLOSED;
-  if (EspAtDrv.connected(linkId))
+  if (stream->connected())
     return ESTABLISHED;
-  linkId = NO_LINK;
   return CLOSED;
 }
 
 IPAddress WiFiClient::remoteIP() {
   IPAddress ip;
   uint16_t port = 0;
-  if (linkId != NO_LINK) {
-    EspAtDrv.remoteParamsQuery(linkId, ip, port);
+  if (stream && stream->getLinkId() != NO_LINK) {
+    EspAtDrv.remoteParamsQuery(stream->getLinkId(), ip, port);
   }
   return ip;
 }
@@ -142,8 +172,8 @@ IPAddress WiFiClient::remoteIP() {
 uint16_t WiFiClient::remotePort() {
   IPAddress ip;
   uint16_t port = 0;
-  if (linkId != NO_LINK) {
-    EspAtDrv.remoteParamsQuery(linkId, ip, port);
+  if (stream && stream->getLinkId() != NO_LINK) {
+    EspAtDrv.remoteParamsQuery(stream->getLinkId(), ip, port);
   }
   return port;
 }

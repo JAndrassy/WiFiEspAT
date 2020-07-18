@@ -28,8 +28,6 @@
 class WiFiUdpSender : public UDP {
 public:
 
-  WiFiUdpSender();
-
   // Sending UDP packets
   virtual int beginPacket(IPAddress ip, uint16_t port);
   virtual int beginPacket(const char *host, uint16_t port);
@@ -61,11 +59,9 @@ public:
 
 protected:
 
-  uint8_t linkId;
-  WiFiEspAtBuffStream stream;
+  WiFiEspAtBuffStream* stream = nullptr;
 
 private:
-  byte txBuffer[WIFIESPAT_UDP_TX_BUFFER_SIZE];
 
   char strIP[16]; // to hold the string version of IP for beginPacket(ip, port);
 
@@ -101,6 +97,7 @@ protected:
 
 private:
 
+  uint8_t linkId = WIFIESPAT_NO_LINK;
   bool listening = false;
 
   byte rxBuffer[WIFIESPAT_UDP_RX_BUFFER_SIZE];

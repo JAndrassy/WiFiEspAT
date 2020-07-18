@@ -1,7 +1,7 @@
 /*
   This file is part of the WiFiEspAT library for Arduino
   https://github.com/jandrassy/WiFiEspAT
-  Copyright 2019 Juraj Andrassy
+  Copyright 2020 Juraj Andrassy
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -17,38 +17,26 @@
   along with this library.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "utility/EspAtDrv.h"
-#include "WiFiServer.h"
+#ifndef _ESP_AT_BUFF_MAN_H_
+#define _ESP_AT_BUFF_MAN_H_
 
-WiFiServer::WiFiServer(uint16_t _port) {
-  port = _port;
-  state = CLOSED;
-}
+#include "WiFiEspAtBuffStream.h"
 
-void WiFiServer::begin(uint8_t maxConnCount, uint8_t serverTimeout) {
-  state = EspAtDrv.serverBegin(port, maxConnCount, serverTimeout) ? LISTEN : CLOSED;
-}
+class WiFiEspAtBuffManagerClass {
+public:
 
-void WiFiServer::end() {
-  if (EspAtDrv.serverEnd()) {
-    state = CLOSED;
-  }
-}
+  WiFiEspAtBuffManagerClass();
 
-uint8_t WiFiServer::status() {
-  return state;
-}
+  WiFiEspAtBuffStream* getBuffStream(uint8_t linkId, uint16_t serverPort, size_t rxBufferSize, size_t txBufferSize);
 
-WiFiClient WiFiServer::available(bool accept) {
-  if (state != CLOSED) {
-    uint8_t linkId = EspAtDrv.clientLinkId(accept);
-    if (linkId != NO_LINK)
-      return WiFiClient(linkId, port);
-  }
-  return WiFiClient();
-}
+  void freeUnused();
 
-WiFiServer::operator bool() {
-  return (state != CLOSED);
-}
+private:
 
+  WiFiEspAtBuffStream* pool[WIFIESPAT_LINKS_COUNT];
+
+};
+
+extern WiFiEspAtBuffManagerClass WiFiEspAtBuffManager;
+
+#endif

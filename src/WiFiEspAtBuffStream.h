@@ -26,14 +26,14 @@
 
 class WiFiEspAtBuffStream {
 
-
 public:
 
-  WiFiEspAtBuffStream(uint8_t* rxBuffer, size_t rxBufferSize, uint8_t* txBuffer, size_t txBufferSize);
-
-  void setLinkId(uint8_t _linkId) {linkId = _linkId;}
   void setUdpPort(const char* udpHost, uint16_t udpPort);
-  void reset();
+  bool connected();
+  void free();
+  void close(bool abort = false);
+
+  uint8_t getLinkId() {return linkId;}
 
   size_t write(uint8_t);
   size_t write(const uint8_t *buf, size_t size);
@@ -51,23 +51,25 @@ public:
   int peek();
 
 private:
+  friend class WiFiEspAtBuffManagerClass;
 
   void fillRXbuffer();
   void setWriteError(int8_t err = -1) {writeError = err;}
 
-  uint8_t linkId;
+  bool assigned = false;
+  uint8_t linkId = WIFIESPAT_NO_LINK;
   const char* udpHost = nullptr;
-  uint16_t udpPort = 0;
+  uint16_t port = 0;
 
   int8_t writeError = 0;
 
-  uint8_t* rxBuffer;
-  size_t rxBufferSize;
+  uint8_t* rxBuffer = nullptr;
+  size_t rxBufferSize = 0;
   size_t rxBufferIndex = 0;
   size_t rxBufferLength = 0;
 
-  uint8_t* txBuffer;
-  size_t txBufferSize;
+  uint8_t* txBuffer = nullptr;
+  size_t txBufferSize = 0;
   size_t txBufferLength = 0;
 
 };

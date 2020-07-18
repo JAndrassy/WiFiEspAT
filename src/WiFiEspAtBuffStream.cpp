@@ -21,25 +21,32 @@
 #include "WiFiEspAtBuffStream.h"
 #include "utility/EspAtDrv.h"
 
-WiFiEspAtBuffStream::WiFiEspAtBuffStream(uint8_t* _rxBuffer, size_t _rxBufferSize, uint8_t* _txBuffer, size_t _txBufferSize) {
-  rxBuffer = _rxBuffer;
-  rxBufferSize = _rxBufferSize;
-  txBuffer = _txBuffer;
-  txBufferSize = _txBufferSize;
-  linkId = NO_LINK;
-}
-
 void WiFiEspAtBuffStream::setUdpPort(const char* _udpHost, uint16_t _udpPort) {
   udpHost = _udpHost;
-  udpPort = _udpPort;
+  port = _udpPort;
 }
 
-void WiFiEspAtBuffStream::reset() {
+bool WiFiEspAtBuffStream::connected() {
+  if (linkId != NO_LINK && !EspAtDrv.connected(linkId)) {
+    linkId = NO_LINK;
+  }
+  return (linkId != NO_LINK);
+}
+
+void WiFiEspAtBuffStream::free() {
+  assigned = false;
   linkId = NO_LINK;
   rxBufferLength = 0;
   rxBufferIndex = 0;
   txBufferLength = 0;
-  udpPort = 0;
+  port = 0;
+}
+
+void WiFiEspAtBuffStream::close(bool abort) {
+  if (linkId != NO_LINK) {
+    EspAtDrv.close(linkId, abort);
+  }
+  free();
 }
 
 size_t WiFiEspAtBuffStream::write(uint8_t b) {
@@ -60,7 +67,7 @@ size_t WiFiEspAtBuffStream::write(const uint8_t *data, size_t length) {
   if (length == 0)
     return 0;
   if (txBufferLength == 0 && length > txBufferSize) // if internal buffer is empty and provided buffer is large
-    return EspAtDrv.sendData(linkId, data, length, udpHost, udpPort); // send it right away
+    return EspAtDrv.sendData(linkId, data, length, udpHost, port); // send it right away
 
   size_t a = txBufferSize - txBufferLength; // available space in internal buffer
   for (size_t i = 0; i < a && i < length; i++) { // copy data to internal buffer
@@ -78,7 +85,7 @@ size_t WiFiEspAtBuffStream::write(const uint8_t *data, size_t length) {
 void WiFiEspAtBuffStream::flush() {
   if (txBufferLength == 0)
     return;
-  size_t res = EspAtDrv.sendData(linkId, txBuffer, txBufferLength, udpHost, udpPort);
+  size_t res = EspAtDrv.sendData(linkId, txBuffer, txBufferLength, udpHost, port);
   setWriteError(res != txBufferLength);
   txBufferLength = 0;
 }
@@ -89,12 +96,12 @@ int WiFiEspAtBuffStream::availableForWrite() {
 
 size_t WiFiEspAtBuffStream::write(Stream& file) {
   flush();
-  return EspAtDrv.sendData(linkId, file, udpHost, udpPort);
+  return EspAtDrv.sendData(linkId, file, udpHost, port);
 }
 
 size_t WiFiEspAtBuffStream::write(SendCallbackFnc callback) {
   flush();
-  return EspAtDrv.sendData(linkId, callback, udpHost, udpPort);
+  return EspAtDrv.sendData(linkId, callback, udpHost, port);
 }
 
 int WiFiEspAtBuffStream::available() {

@@ -35,7 +35,7 @@ class WiFiServer;
 class WiFiClient : public Client {
 
   friend WiFiServer;
-  WiFiClient(uint8_t linkId);
+  WiFiClient(uint8_t linkId, uint16_t serverPort);
 
 public:
   WiFiClient();
@@ -72,12 +72,7 @@ private:
   int connect(bool ssl, IPAddress ip, uint16_t port);
   int connect(bool ssl, const char *host, uint16_t port);
 
-  uint8_t linkId;
-
-  byte rxBuffer[WIFIESPAT_CLIENT_RX_BUFFER_SIZE];
-  byte txBuffer[WIFIESPAT_CLIENT_TX_BUFFER_SIZE];
-
-  WiFiEspAtBuffStream stream;
+  WiFiEspAtBuffStream* stream = nullptr;
 
 };
 
