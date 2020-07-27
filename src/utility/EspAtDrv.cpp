@@ -348,10 +348,7 @@ bool EspAtDrvClass::quitAP() {
     LOG_WARN_PRINTLN(F("STA is off"));
     return false;
   }
-
-  if (wifiMode != WIFI_MODE_SAP) {
-    simpleCommand(PSTR("AT+CWAUTOCONN=0")); // don't reconnect on reset
-  }
+  simpleCommand(PSTR("AT+CWAUTOCONN=0")); // don't reconnect on reset
   simpleCommand(PSTR("AT+CWDHCP=1,1")); // enable DHCP back in case static IP disabled it
   simpleCommand(PSTR("AT+CIPDNS_DEF=0")); // clear static DNS servers
   return simpleCommand(PSTR("AT+CWQAP")); // it doesn't clear the persistent settings
@@ -589,7 +586,8 @@ uint8_t EspAtDrvClass::clientLinkId(bool accept) {
   maintain();
   for (int linkId = 0; linkId < LINKS_COUNT; linkId++) {
     LinkInfo& link = linkInfo[linkId];
-    if (link.isConnected() && link.isIncoming() && !link.isClosing() && !link.isAccepted()) {
+    if (link.isConnected() && link.isIncoming() && !link.isClosing() && !link.isAccepted()
+        && (link.available || accept)) {
       LOG_INFO_PRINT_PREFIX();
       LOG_INFO_PRINT(F("incoming linkId "));
       LOG_INFO_PRINTLN(linkId);
