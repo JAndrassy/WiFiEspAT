@@ -43,9 +43,11 @@ void setup() {
     while (true);
   }
 
-  WiFi.endAP(true); // to disable default automatic start of persistent AP at startup
+  WiFi.disconnect(); // to clear the way. not persistent
 
   WiFi.setPersistent(); // set the following WiFi connection as persistent
+
+  WiFi.endAP(); // to disable default automatic start of persistent AP at startup
 
 //  uncomment this lines for persistent static IP. set addresses valid for your network
 //  IPAddress ip(192, 168, 1, 9);
@@ -64,7 +66,6 @@ void setup() {
   int status = WiFi.begin(ssid, pass);
 
   if (status == WL_CONNECTED) {
-    WiFi.setAutoConnect(true);
     Serial.println();
     Serial.println("Connected to WiFi network.");
     printWifiStatus();

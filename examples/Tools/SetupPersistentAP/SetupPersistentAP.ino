@@ -37,9 +37,9 @@ void setup() {
     while (true);
   }
 
-  WiFi.endAP(true); // to disable default automatic start of persistent AP at startup
-
   WiFi.setPersistent(); // set the following settings as persistent
+
+  WiFi.endAP(); // to disable default automatic start of persistent AP at startup
 
 //  use this lines for custom SoftAP IP. it determines the IP of stations too
 //  IPAddress ip(192, 168, 2, 1);
@@ -54,6 +54,7 @@ void setup() {
 
   if (status == WL_AP_LISTENING) {
     Serial.println();
+    delay(1000); // startup of AP
     Serial.println("AP started");
     printApStatus();
   } else {

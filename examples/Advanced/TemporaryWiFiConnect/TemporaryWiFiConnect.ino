@@ -44,7 +44,7 @@ void setup() {
     while (true);
   }
 
-  // disconnect and delete previous connection
+  // disconnect persistent connection (not persistent)
   WiFi.disconnect();
 
 }

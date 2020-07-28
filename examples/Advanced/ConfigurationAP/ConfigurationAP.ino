@@ -32,7 +32,7 @@ void setup() {
     while (true);
   }
 
-  // WiFi.disconnect(); // forget the persistent connection to test the Configuration AP
+  WiFi.disconnect(); // stop the persistent connection to test the Configuration AP
 
   // waiting for connection to Wifi network set with the SetupWiFiConnection sketch
   Serial.println();
@@ -132,6 +132,7 @@ void configAP() {
         client.stop();
 
         if (status == WL_CONNECTED) {
+          delay(1000); // to let the AT firmware finish the communication
           Serial.println("Connection successful. Ending AP.");
           server.end();
           WiFi.endAP(true);

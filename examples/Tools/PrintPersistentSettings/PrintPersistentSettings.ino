@@ -45,7 +45,7 @@ void setup() {
   // waiting for connection to Wifi network set with the SetupWiFiConnection sketch
   Serial.println();
   Serial.println("Waiting for connection to WiFi");
-  for (int i = 0; i < 6; i++) {
+  for (int i = 0; i < 10; i++) {
     if (WiFi.status() == WL_CONNECTED)
       break;
     delay(1000);
