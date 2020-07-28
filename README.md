@@ -108,18 +108,20 @@ For hardware serial high baud rates can be used. For Arduino Mega 500000 baud wo
 
 ## Persistent WiFi connection
 
-The esp8266 can remember the WiFi network settings to connect automatically to WiFi network after power-up or reset. This library supports this with the SetupWiFiConnection example tool sketch. The sketch uses the WiFi.setPersistent() and WiFi.setAutoConnect() setting. After the connection is successful, it is remembered by the esp8266. Other sketches don't need to call WiFi.begin(), only wait until WiFi.status() returns WL_CONNECTED.
+The esp8266 can remember the WiFi network settings to connect automatically to WiFi network after power-up or reset. This library supports this with the SetupWiFiConnection example tool sketch. The sketch uses the WiFi.setPersistent() setting. After the connection is successful, it is remembered by the esp8266 and set for autoconnect at start. Other sketches don't need to call WiFi.begin(), only wait until WiFi.status() returns WL_CONNECTED.
+
+Note: The esp8266 SDK remembers the SSID and password by default and uses them to autoconnect at start. Your esp8266 may have remembered setting from previous use with any firmware or Arduino sketch.
 
 Using persistent connections has two benefits. The sketch size is smaller without WiFi.begin() and the connection to network is asynchronous, it happens while other devices are setup in setup(). (Synchronous WiFi.begin() with DHCP waits 5 seconds for the OK from AT firmware.)
 
-WiFi.disconnect() clears the remembered connection and disables automatic connection to network. Don't use WiFi.setPersistent() and WiFi.disconnect() in the same sketch. The settings would be written to flash and then cleared repeatedly, which would lead to faster esp8266 flash memory wearing.
+WiFi.disconnect() in 'persistent mode' or WiFi.disconnect(true) clear the remembered connection and disables automatic connection to network. Don't use persistent WiFi.begin(ssid, pass) and persistent WiFi.disconnect() in the same sketch. The settings would be written to flash and then cleared repeatedly, which would lead to faster esp8266 flash memory wearing.
 
-Without WiFi.setAutoConnect(true) the remembered network settings are not used (default is true until first disconnect()). If esp8266 auto starts the connection, it can collide with WiFi.begin(). Clear the persistent connection with WiFi.disconnect() before using a temporary connection.
+With WiFi.setAutoConnect(false) the remembered network settings are not used, but stay remembered. If esp8266 auto starts the connection, it can collide with WiFi.begin(). Clear the persistent connection with WiFi.disconnect() before using a temporary not persistent connection.
 
 
 ## Persistent Access Point
 
-This library supports esp8266 SoftAP control over AT firmware. With WiFi.beginAP() the SoftAP is started with default settings. Default settings are factory settings or remembered persistent settings. The SetupPeristentAP example tool can be used to setup SoftAP with custom SSID and optionally setup encryption/password and IP address for the SoftAP.
+This library supports esp8266 SoftAP control over AT firmware. With WiFi.beginAP() without parameters the SoftAP is started with default settings. Default settings are factory settings or remembered persistent settings. The SetupPeristentAP example tool can be used to setup SoftAP with custom SSID and optionally setup encryption/password and IP address for the SoftAP.
 
 Use WiFi.endAP(true) to disable start of SoftAP at esp8266 startup. It will not clear the persistent AP settings.
 
@@ -132,7 +134,7 @@ This library implements Arduino WiFi networking API. The last version of this AP
 
 * `init` command to set the Serial interface used for communication
 * `setPersistent` to set the remembering of the following WiFi connection (see the SetupPersistentWiFiConnection.ino tool example)
-* `setAutoConnect` to set the automatic connection to remembered WiFi AP (see the SetupPersistentWiFiConnection.ino tool example)
+* `setAutoConnect` to set the automatic connection to remembered WiFi AP
 * `scanNetworks` optionally can be called with array of type `WiFiApData[]` to fill
 * `hostname` to get the hostname. can be called with char array to fill (see PrintPersistentSettings.ino tool example)
 * `SSID` optionally can be called with char array to fill (see PrintPersistentSettings.ino tool example)

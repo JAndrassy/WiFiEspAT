@@ -37,7 +37,7 @@ bool WiFiClass::init(Stream* serial, int8_t resetPin) {
 }
 
 void WiFiClass::setPersistent(bool _persistent) {
-  persistent = _persistent;
+  EspAtDrv.sysPersistent(_persistent);
 }
 
 uint8_t WiFiClass::status() {
@@ -81,24 +81,24 @@ bool WiFiClass::setAutoConnect(bool autoConnect) {
 }
 
 int WiFiClass::begin(const char* ssid, const char* passphrase, const uint8_t* bssid) {
-  bool ok = EspAtDrv.joinAP(ssid, passphrase, bssid, persistent);
+  bool ok = EspAtDrv.joinAP(ssid, passphrase, bssid);
   state = ok ? WL_CONNECTED : WL_CONNECT_FAILED;
   return state;
 }
 
-int WiFiClass::disconnect() {
-  if (EspAtDrv.quitAP()) {
+int WiFiClass::disconnect(bool persistent) {
+  if (EspAtDrv.quitAP(persistent)) {
     state = WL_DISCONNECTED;
   }
   return state;
 }
 
 bool WiFiClass::config(IPAddress local_ip, IPAddress dns_server, IPAddress gateway, IPAddress subnet) {
-  return EspAtDrv.staStaticIp(local_ip, gateway, subnet, persistent) && setDNS(dns_server);
+  return EspAtDrv.staStaticIp(local_ip, gateway, subnet) && setDNS(dns_server);
 }
 
 bool WiFiClass::setDNS(IPAddress dns_server1, IPAddress dns_server2) {
-  return EspAtDrv.staDNS(dns_server1, dns_server2, persistent);
+  return EspAtDrv.staDNS(dns_server1, dns_server2);
 }
 
 bool WiFiClass::setHostname(const char* name) {
@@ -265,15 +265,15 @@ int WiFiClass::beginAP(const char *ssid, const char* passphrase, uint8_t channel
     break;
   }
   apMaxConn = 0; // clear the ap params info cahche
-  return EspAtDrv.beginSoftAP(ssid, passphrase, channel, encoding, maxConnetions, hidden, persistent) ? WL_AP_LISTENING : WL_AP_FAILED;
+  return EspAtDrv.beginSoftAP(ssid, passphrase, channel, encoding, maxConnetions, hidden) ? WL_AP_LISTENING : WL_AP_FAILED;
 }
 
 bool WiFiClass::endAP(bool pers) {
-  return EspAtDrv.endSoftAP(persistent || pers);
+  return EspAtDrv.endSoftAP(pers);
 }
 
 bool WiFiClass::configureAP(IPAddress ip, IPAddress gateway, IPAddress subnet) {
-  return EspAtDrv.softApIp(ip, gateway, subnet, persistent);
+  return EspAtDrv.softApIp(ip, gateway, subnet);
 }
 
 uint8_t* WiFiClass::apMacAddress(uint8_t* mac) {

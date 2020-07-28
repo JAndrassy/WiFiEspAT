@@ -66,7 +66,7 @@ public:
 
   bool setAutoConnect(bool autoConnect);
   int begin(const char* ssid, const char *passphrase = nullptr, const uint8_t* bssid = nullptr);
-  int disconnect(void);
+  int disconnect(bool persistent = false);
 
   bool config(IPAddress local_ip, IPAddress dns_server = INADDR_NONE, IPAddress gateway = INADDR_NONE, IPAddress subnet = INADDR_NONE);
 
@@ -139,7 +139,6 @@ private:
   uint8_t mapAtEnc2ArduinoEnc(uint8_t encryptionType);
 
   uint8_t state = WL_NO_MODULE;
-  bool persistent = false;
 
   // this members are removed by compiler if the corresponding function is not used
   static char fwVersion[]; // static is for use as default parameter value of function

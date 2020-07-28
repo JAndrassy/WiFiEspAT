@@ -129,6 +129,10 @@ bool EspAtDrvClass::firmwareVersion(char* buff) {
   return readOK();
 }
 
+void EspAtDrvClass::sysPersistent(bool _persistent) {
+  persistent = _persistent;
+}
+
 int EspAtDrvClass::staStatus() {
   maintain();
   
@@ -189,7 +193,7 @@ uint8_t EspAtDrvClass::listAP(WiFiApData apData[], uint8_t size) {
   return count;
 }
 
-bool EspAtDrvClass::staStaticIp(const IPAddress& ip, const IPAddress& gw, const IPAddress& nm, bool persistent) {
+bool EspAtDrvClass::staStaticIp(const IPAddress& ip, const IPAddress& gw, const IPAddress& nm) {
   maintain();
 
   LOG_INFO_PRINT_PREFIX();
@@ -218,7 +222,7 @@ bool EspAtDrvClass::staStaticIp(const IPAddress& ip, const IPAddress& gw, const 
   return sendCommand();
 }
 
-bool EspAtDrvClass::staDNS(const IPAddress& dns1, const IPAddress& dns2, bool persistent) {
+bool EspAtDrvClass::staDNS(const IPAddress& dns1, const IPAddress& dns2) {
   maintain();
   
   LOG_INFO_PRINT_PREFIX();
@@ -303,7 +307,7 @@ bool EspAtDrvClass::staDnsQuery(IPAddress& dns1, IPAddress& dns2) {
   return readOK();
 }
 
-bool EspAtDrvClass::joinAP(const char* ssid, const char* password, const uint8_t* bssid, bool persistent) {
+bool EspAtDrvClass::joinAP(const char* ssid, const char* password, const uint8_t* bssid) {
   maintain();
 
   LOG_INFO_PRINT_PREFIX();
@@ -336,21 +340,32 @@ bool EspAtDrvClass::joinAP(const char* ssid, const char* password, const uint8_t
     }
   }
   cmd->print('"');
-  return sendCommand();
+  if (!sendCommand())
+    return false;
+  if (persistent) {
+    simpleCommand(PSTR("AT+CWAUTOCONN=1"));
+  }
+  return true;
 }
 
-bool EspAtDrvClass::quitAP() {
+bool EspAtDrvClass::quitAP(bool save) {
   LOG_INFO_PRINT_PREFIX();
-  LOG_INFO_PRINTLN(F("quit AP"));
+  LOG_INFO_PRINT(F("quit AP "));
+  LOG_INFO_PRINTLN((persistent || save) ? F(" persistent") : F(" current") );
 
   if (wifiMode == WIFI_MODE_SAP) { // STA is off
     LOG_WARN_PRINT_PREFIX();
     LOG_WARN_PRINTLN(F("STA is off"));
     return false;
   }
-  simpleCommand(PSTR("AT+CWAUTOCONN=0")); // don't reconnect on reset
-  simpleCommand(PSTR("AT+CWDHCP=1,1")); // enable DHCP back in case static IP disabled it
-  simpleCommand(PSTR("AT+CIPDNS_DEF=0")); // clear static DNS servers
+  if (persistent || save) {
+    simpleCommand(PSTR("AT+CWAUTOCONN=0")); // don't reconnect on reset
+    simpleCommand(PSTR("AT+CIPDNS_DEF=0")); // clear static DNS servers
+    simpleCommand(PSTR("AT+CWDHCP=1,1")); // enable DHCP back in case static IP disabled it
+  } else {
+    simpleCommand(PSTR("AT+CIPDNS_CUR=0")); // clear static DNS servers
+    simpleCommand(PSTR("AT+CWDHCP_CUR=1,1")); // enable DHCP back in case static IP disabled it
+  }
   return simpleCommand(PSTR("AT+CWQAP")); // it doesn't clear the persistent settings
 }
 
@@ -400,7 +415,7 @@ bool EspAtDrvClass::apQuery(char* ssid, uint8_t* bssid, uint8_t& channel, int32_
   return readOK();
 }
 
-bool EspAtDrvClass::softApIp(const IPAddress& ip, const IPAddress& gw, const IPAddress& nm, bool persistent) {
+bool EspAtDrvClass::softApIp(const IPAddress& ip, const IPAddress& gw, const IPAddress& nm) {
   maintain();
 
   LOG_INFO_PRINT_PREFIX();
@@ -473,7 +488,7 @@ bool EspAtDrvClass::softApIpQuery(IPAddress& ip, IPAddress& gwip, IPAddress& mas
 }
 
 bool EspAtDrvClass::beginSoftAP(const char *ssid, const char* passphrase, uint8_t channel,
-    uint8_t encoding, uint8_t maxConnetions, bool hidden, bool persistent) {
+    uint8_t encoding, uint8_t maxConnetions, bool hidden) {
   maintain();
 
   LOG_INFO_PRINT_PREFIX();
@@ -508,14 +523,14 @@ bool EspAtDrvClass::beginSoftAP(const char *ssid, const char* passphrase, uint8_
   return sendCommand();
 }
 
-bool EspAtDrvClass::endSoftAP(bool persistent) {
+bool EspAtDrvClass::endSoftAP(bool save) {
   maintain();
 
   LOG_INFO_PRINT_PREFIX();
   LOG_INFO_PRINT(F("end SoftAP "));
-  LOG_INFO_PRINTLN(persistent ? F("persistent") : F("current") );
+  LOG_INFO_PRINTLN((persistent || save) ? F("persistent") : F("current") );
 
-  return setWifiMode(0, persistent); // 0 sets STA mode
+  return setWifiMode(0, persistent || save); // 0 sets STA mode
 }
 
 bool EspAtDrvClass::softApQuery(char* ssid, char* passphrase, uint8_t& channel, uint8_t& encoding, uint8_t& maxConnections, bool& hidden) {
@@ -754,8 +769,14 @@ size_t EspAtDrvClass::recvData(uint8_t linkId, uint8_t data[], size_t buffSize) 
   cmd->print(linkId);
   cmd->print(',');
   cmd->print(buffSize);
-  if (!sendCommand(PSTR("+CIPRECVDATA"), false))
+  if (!sendCommand(PSTR("+CIPRECVDATA"), false)) {
+    LOG_ERROR_PRINT_PREFIX();
+    LOG_ERROR_PRINT(F("error receiving on link "));
+    LOG_ERROR_PRINTLN(linkId);
+    link.available = 0;
+    lastErrorCode = EspAtDrvError::RECEIVE;
     return 0;
+  }
 
   size_t len = atol(buffer + strlen("+CIPRECVDATA,")); // AT 1.7.x has : after <data_len> (not matching the doc)
 
@@ -1216,6 +1237,9 @@ bool EspAtDrvClass::readRX(PGM_P expected, bool bufferData, bool listItem) {
         LOG_DEBUG_PRINTLN(F(" ...UNLINK is OK"));
         return true;
       }
+      if (expected == nullptr) {
+        LOG_DEBUG_PRINTLN((FSH_P) IGNORED); // it is only a late response to timeout query '?'
+      } else {
       LOG_DEBUG_PRINTLN(F(" ...error"));
       LOG_ERROR_PRINT_PREFIX();
       LOG_ERROR_PRINT(F("expected "));
@@ -1224,6 +1248,7 @@ bool EspAtDrvClass::readRX(PGM_P expected, bool bufferData, bool listItem) {
       LOG_ERROR_PRINTLN(buffer);
       lastErrorCode = EspAtDrvError::AT_ERROR;
       return false;
+      }
     } else if (!strcmp_P(buffer, PSTR("No AP"))) {
       LOG_DEBUG_PRINTLN((FSH_P) PROCESSED);
       LOG_ERROR_PRINT_PREFIX();
@@ -1271,7 +1296,7 @@ bool EspAtDrvClass::simpleCommand(PGM_P command) {
   return readOK();
 }
 
-bool EspAtDrvClass::setWifiMode(uint8_t mode, bool persistent) {
+bool EspAtDrvClass::setWifiMode(uint8_t mode, bool save) {
 
   if (wifiModeDef == 0) { // reset() was not executed successful
     LOG_ERROR_PRINT_PREFIX();
@@ -1284,15 +1309,15 @@ bool EspAtDrvClass::setWifiMode(uint8_t mode, bool persistent) {
     mode = WIFI_MODE_STA;
   }
 
-  if (mode == wifiMode && (!persistent || mode == wifiModeDef)) // no change
+  if (mode == wifiMode && (!save || mode == wifiModeDef)) // no change
     return true;
 
-  cmd->print(persistent ? F("AT+CWMODE=") : F("AT+CWMODE_CUR="));
+  cmd->print(save ? F("AT+CWMODE=") : F("AT+CWMODE_CUR="));
   cmd->print(mode);
   if (!sendCommand())
     return false;
   wifiMode = mode;
-  if (persistent) {
+  if (save) {
     wifiModeDef = mode;
   }
   return true;

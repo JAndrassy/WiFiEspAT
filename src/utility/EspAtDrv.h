@@ -55,28 +55,29 @@ public:
   void maintain();
   EspAtDrvError getLastErrorCode() {return lastErrorCode;}
   bool firmwareVersion(char* buff);
+  void sysPersistent(bool persistent);
 
   int staStatus();
 
   uint8_t listAP(WiFiApData apData[], uint8_t size); // returns count of filled records
 
-  bool staStaticIp(const IPAddress& local_ip, const IPAddress& gateway, const IPAddress& subnet, bool persistent = false);
-  bool staDNS(const IPAddress& dns1, const IPAddress& dns2, bool persistent = false);
+  bool staStaticIp(const IPAddress& local_ip, const IPAddress& gateway, const IPAddress& subnet);
+  bool staDNS(const IPAddress& dns1, const IPAddress& dns2);
   bool staMacQuery(uint8_t* mac);
   bool staIpQuery(IPAddress& ip, IPAddress& gwip, IPAddress& mask);
   bool staDnsQuery(IPAddress& dns1, IPAddress& dns2);
 
-  bool joinAP(const char* ssid, const char* password, const uint8_t* bssid, bool persistent = false);
-  bool quitAP();
+  bool joinAP(const char* ssid, const char* password, const uint8_t* bssid);
+  bool quitAP(bool save);
   bool staAutoConnect(bool autoConnect);
   bool apQuery(char* ssid, uint8_t* bssid, uint8_t& channel, int32_t& rssi);
 
-  bool softApIp(const IPAddress& local_ip, const IPAddress& gateway, const IPAddress& subnet, bool persistent = false);
+  bool softApIp(const IPAddress& local_ip, const IPAddress& gateway, const IPAddress& subnet);
   bool softApMacQuery(uint8_t* mac);
   bool softApIpQuery(IPAddress& ip, IPAddress& gwip, IPAddress& mask);
 
   bool beginSoftAP(const char *ssid = nullptr, const char* passphrase = nullptr, uint8_t channel = 1,
-      uint8_t encoding = 4, uint8_t maxConnections = 0, bool hidden = false, bool persistent = false);
+      uint8_t encoding = 4, uint8_t maxConnections = 0, bool hidden = false);
   bool endSoftAP(bool persistent = false);
   bool softApQuery(char* ssid, char* passphrase, uint8_t& channel, uint8_t& encoding, uint8_t& maxConnections, bool& hidden);
 
@@ -115,6 +116,7 @@ private:
   Stream* serial;
   Print* cmd; // debug wrapper or serial
   char buffer[64];
+  bool persistent = false;
   uint8_t wifiMode = 0;
   uint8_t wifiModeDef = 0;
   LinkInfo linkInfo[LINKS_COUNT];
