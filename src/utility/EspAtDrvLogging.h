@@ -20,6 +20,8 @@
 #ifndef _WIFIESPAT_DEBUG_H_
 #define _WIFIESPAT_DEBUG_H_
 
+#include <Arduino.h>
+
 #define FSH_P const __FlashStringHelper*
 
 #define LOG_LEVEL_SILENT 0
@@ -28,7 +30,9 @@
 #define LOG_LEVEL_INFO   3
 #define LOG_LEVEL_DEBUG  4
 
-#define LOG_LEVEL LOG_LEVEL_SILENT
+#ifndef WIFIESPAT_LOG_LEVEL
+#define WIFIESPAT_LOG_LEVEL LOG_LEVEL_SILENT
+#endif
 
 #ifdef ARDUINO_SAM_ZERO // M0
 #define LOG_OUTPUT SerialUSB
@@ -37,7 +41,7 @@
 #endif
 
 #define LOG_ERROR_PREFIX "esp ERROR: "
-#if LOG_LEVEL >= LOG_LEVEL_ERROR
+#if WIFIESPAT_LOG_LEVEL >= LOG_LEVEL_ERROR
 extern const char LOG_ERROR_PREFIX_PROGMEM[];
 #define LOG_ERROR_PRINT_PREFIX() LOG_OUTPUT.print((FSH_P) LOG_ERROR_PREFIX_PROGMEM)
 #define LOG_ERROR_PRINT(msg) LOG_OUTPUT.print(msg)
@@ -49,7 +53,7 @@ extern const char LOG_ERROR_PREFIX_PROGMEM[];
 #endif
 
 #define LOG_WARN_PREFIX "esp WARN: "
-#if LOG_LEVEL >= LOG_LEVEL_WARN
+#if WIFIESPAT_LOG_LEVEL >= LOG_LEVEL_WARN
 extern const char LOG_WARN_PREFIX_PROGMEM[];
 #define LOG_WARN_PRINT_PREFIX() LOG_OUTPUT.print((FSH_P) LOG_WARN_PREFIX_PROGMEM)
 #define LOG_WARN_PRINT(msg) LOG_OUTPUT.print(msg)
@@ -61,7 +65,7 @@ extern const char LOG_WARN_PREFIX_PROGMEM[];
 #endif
 
 #define LOG_INFO_PREFIX "esp INFO: "
-#if LOG_LEVEL >= LOG_LEVEL_INFO
+#if WIFIESPAT_LOG_LEVEL >= LOG_LEVEL_INFO
 extern const char LOG_INFO_PREFIX_PROGMEM[];
 #define LOG_INFO_PRINT_PREFIX() LOG_OUTPUT.print((FSH_P) LOG_INFO_PREFIX_PROGMEM)
 #define LOG_INFO_PRINT(msg) LOG_OUTPUT.print(msg)
@@ -73,7 +77,7 @@ extern const char LOG_INFO_PREFIX_PROGMEM[];
 #endif
 
 #define LOG_DEBUG_PREFIX "esp> "
-#if LOG_LEVEL >= LOG_LEVEL_DEBUG
+#if WIFIESPAT_LOG_LEVEL >= LOG_LEVEL_DEBUG
 extern const char LOG_DEBUG_PREFIX_PROGMEM[];
 #define LOG_DEBUG_PRINT_PREFIX() LOG_OUTPUT.print((FSH_P) LOG_DEBUG_PREFIX_PROGMEM)
 #define LOG_DEBUG_PRINT(msg) LOG_OUTPUT.print(msg)

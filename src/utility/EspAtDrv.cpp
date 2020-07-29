@@ -42,7 +42,7 @@ const char QOUT_COMMA_QOUT[] PROGMEM = "\",\"";
 const char PROCESSED[] PROGMEM = " ...processed";
 const char IGNORED[] PROGMEM = " ...ignored";
 
-#if LOG_LEVEL >= LOG_LEVEL_DEBUG
+#if WIFIESPAT_LOG_LEVEL >= LOG_LEVEL_DEBUG
 class DebugPrint : public Print {
 public:
   Print* stream;
@@ -63,7 +63,7 @@ public:
 
 bool EspAtDrvClass::init(Stream* _serial, int8_t resetPin) {
   serial = _serial;
-#if LOG_LEVEL < LOG_LEVEL_DEBUG
+#if WIFIESPAT_LOG_LEVEL < LOG_LEVEL_DEBUG
   cmd = _serial;
 #else
   debugPrint.stream = serial;
