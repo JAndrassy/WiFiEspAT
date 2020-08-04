@@ -102,6 +102,8 @@ void configAP() {
         client.println(F("Refresh: 10"));
         client.println();
         client.println(F("<html><body><h3>Configuration AP</h3><br>connecting...</body></html>"));
+        client.flush();
+        delay(1000);
         client.stop();
 
         Serial.println();

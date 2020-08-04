@@ -56,7 +56,7 @@ void loop() {
   doSomething();
 
   Serial.println();
-  Serial.println("putting esp8266 to deep sleep...");
+  Serial.println("putting ESP to deep sleep...");
   WiFi.deepSleep();
 
   delay(SLEEP_INTERVAL); // here the main MCU could be set to sleep too

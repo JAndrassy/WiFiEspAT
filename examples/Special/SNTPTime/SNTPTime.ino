@@ -7,7 +7,7 @@
  */
 
 #include <WiFiEspAT.h>
-#include <TimeLib.h>
+#include <TimeLib.h> // in LibraryManager as "Time"
 
 // Emulate Serial1 on pins 6/7 if not present
 #if defined(ARDUINO_ARCH_AVR) && !defined(HAVE_HWSERIAL1)
@@ -45,7 +45,7 @@ void setup() {
   WiFi.sntp(TIME_ZONE, "us.pool.ntp.org");
 
   Serial.println("Waiting for SNTP");
-  while (!WiFi.getTime()) {
+  while (WiFi.getTime() < SECS_YR_2000) {
     delay(1000);
     Serial.print('.');
   }

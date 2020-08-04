@@ -41,14 +41,21 @@ void setup() {
     major = atoi(tok);
     tok = strtok(NULL, ".");
     minor = atoi(tok);
-    if (major != 1 || minor < 7) {
-      if (major == 2 && minor == 0) {
-        Serial.println("AT firmware version 2.0 doesn't support passive receive mode and can't be used with the WiFiEspAt library");
-      } else {
-        Serial.println("WiWiEspAT library requires at least version 1.7.0 of AT firmware (but not 2.0)");
-      }
+    if (major == 2 && minor == 0) {
+      Serial.println("AT firmware version 2.0 doesn't support passive receive mode and can't be used with the WiFiEspAt library");
+    } else if (major < 1 || (major == 1 && minor < 7)) {
+      Serial.println("WiWiEspAT library requires at least version 1.7.0 of AT firmware (but not 2.0)");
     } else {
       Serial.println("AT firmware is OK for the WiFiEspAT library.");
+#ifdef WIFIESPAT1
+      if (major > 1) {
+        Serial.println("For AT firmware version 2 comment out #define WIFIESPAT1 in EspAtDrvTypes.h");
+      }
+#else
+      if (major == 1) {
+        Serial.println("For AT firmware version 1 add #define WIFIESPAT1 in EspAtDrvTypes.h");
+      }
+#endif
     }
   } else {
     Serial.println("Error getting AT firmware version");
