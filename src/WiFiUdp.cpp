@@ -81,6 +81,7 @@ size_t WiFiUdpSender::write(SendCallbackFnc callback) {
   return stream->write(callback);
 }
 
+#ifdef WIFIESPAT1
 IPAddress WiFiUDP::remoteIP() {
   IPAddress ip;
   uint16_t port = 0;
@@ -98,19 +99,36 @@ uint16_t WiFiUDP::remotePort() {
   }
   return port;
 }
+#endif
 
 WiFiUDP::WiFiUDP() {
 }
 
 
-uint8_t WiFiUDP::begin(uint16_t port) {
+uint8_t WiFiUDP::begin(const char* ip, uint16_t port) {
   if (linkId != NO_LINK) {
     stop();
   }
-  linkId = EspAtDrv.connect("UDP", "0.0.0.0", port, this, port);
+#ifdef WIFIESPAT1
+  linkId = EspAtDrv.connect("UDP", ip, port, this, port);
+#else
+  linkId = EspAtDrv.connect("UDP", ip, port, port);
+#endif
   listening = (linkId != NO_LINK);
   return listening;
 }
+
+uint8_t WiFiUDP::begin(uint16_t port) {
+  return begin("0.0.0.0", port);
+}
+
+#ifndef WIFIESPAT1 //AT2 (virtual method would not be optimized away, even if not used)
+uint8_t WiFiUDP::beginMulticast(IPAddress ip, uint16_t port) {
+  char s[16];
+  EspAtDrv.ip2str(ip, s);
+  return begin(s, port);
+}
+#endif
 
 void WiFiUDP::stop() {
   if (linkId == NO_LINK)
@@ -128,8 +146,23 @@ int WiFiUDP::parsePacket() {
     return 0;
   rxBufferLength = 0;
   rxBufferIndex = 0;
+#ifdef WIFIESPAT1
   EspAtDrv.maintain();
   return available();
+#else
+  size_t len = EspAtDrv.availData(linkId);
+  if (!len)
+    return 0;
+  if (len > sizeof(rxBuffer)) {
+    len = sizeof(rxBuffer);
+  }
+  size_t l = EspAtDrv.recvDataWithInfo(linkId, rxBuffer, len, senderIP, senderPort);
+
+  if (l != len) // error
+    return 0;
+  rxBufferLength = len;
+  return len;
+#endif  
 }
 
 int WiFiUDP::available() {
@@ -160,6 +193,7 @@ int WiFiUDP::peek() {
   return rxBuffer[rxBufferIndex];
 }
 
+#ifdef WIFIESPAT1
 uint8_t WiFiUDP::readRxData(Stream* serial, size_t len) {
   if (rxBufferLength) // to avoid overwrite of previous packet
     return BUSY;
@@ -172,6 +206,7 @@ uint8_t WiFiUDP::readRxData(Stream* serial, size_t len) {
   rxBufferIndex = 0;
   return OK;
 }
+#endif
 
 int WiFiUDP::beginPacket(const char *host, uint16_t port) {
   if (!listening)

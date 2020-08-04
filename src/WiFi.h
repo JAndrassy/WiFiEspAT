@@ -62,10 +62,11 @@ public:
 
   uint8_t status();
 
-  void setPersistent(bool persistent = true);
+  bool setPersistent(bool persistent = true);
 
   bool setAutoConnect(bool autoConnect);
   int begin(const char* ssid, const char *passphrase = nullptr, const uint8_t* bssid = nullptr);
+  int beginEnterprise(const char* ssid, uint8_t method, const char* username, const char* passphrase, const char* identity, uint8_t security);
   int disconnect(bool persistent = false);
 
   bool config(IPAddress local_ip, IPAddress dns_server = INADDR_NONE, IPAddress gateway = INADDR_NONE, IPAddress subnet = INADDR_NONE);

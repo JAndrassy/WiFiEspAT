@@ -22,6 +22,8 @@
 
 #include <stddef.h>
 
+#define WIFIESPAT1
+
 const uint8_t WIFIESPAT_LINKS_COUNT = 5;
 const uint8_t WIFIESPAT_NO_LINK = 255;
 
@@ -56,6 +58,7 @@ struct WiFiApData {
    uint8_t enc;
 };
 
+#ifdef WIFIESPAT1
 class EspAtDrvUdpDataCallback {
 protected:
 
@@ -67,6 +70,7 @@ protected:
   virtual uint8_t readRxData(Stream* serial, size_t len) = 0;
   friend EspAtDrvClass;
 };
+#endif
 
 typedef void (*SendCallbackFnc)(Print& p);
 

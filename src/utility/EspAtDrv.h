@@ -37,7 +37,9 @@ struct LinkInfo {
   uint8_t flags = 0;
   size_t available = 0;
 
+#ifdef WIFIESPAT1
   EspAtDrvUdpDataCallback* udpDataCallback;
+#endif
 
   bool isConnected() { return flags & LINK_CONNECTED;}
   bool isClosing() { return flags & LINK_CLOSING;}
@@ -55,7 +57,7 @@ public:
   void maintain();
   EspAtDrvError getLastErrorCode() {return lastErrorCode;}
   bool firmwareVersion(char* buff);
-  void sysPersistent(bool persistent);
+  bool sysPersistent(bool persistent);
 
   int staStatus();
 
@@ -68,6 +70,7 @@ public:
   bool staDnsQuery(IPAddress& dns1, IPAddress& dns2);
 
   bool joinAP(const char* ssid, const char* password, const uint8_t* bssid);
+  bool joinEAP(const char* ssid, uint8_t method, const char* identity, const char* username, const char* password, uint8_t security);
   bool quitAP(bool save);
   bool staAutoConnect(bool autoConnect);
   bool apQuery(char* ssid, uint8_t* bssid, uint8_t& channel, int32_t& rssi);
@@ -81,12 +84,15 @@ public:
   bool endSoftAP(bool persistent = false);
   bool softApQuery(char* ssid, char* passphrase, uint8_t& channel, uint8_t& encoding, uint8_t& maxConnections, bool& hidden);
 
-  bool serverBegin(uint16_t port, uint8_t maxConnCount = 1, uint8_t serverTimeout = 60);
+  bool serverBegin(uint16_t port, uint8_t maxConnCount = 1, uint8_t serverTimeout = 60, bool ssl = false, bool ca = false);
   bool serverEnd();
   uint8_t clientLinkId(bool accept = false);
 
   uint8_t connect(const char* type, const char* host, uint16_t port, //
-      EspAtDrvUdpDataCallback* udpDataCallback = nullptr, uint16_t udpLocalPort = 0);
+#ifdef WIFIESPAT1
+      EspAtDrvUdpDataCallback* udpDataCallback = nullptr, 
+#endif      
+      uint16_t udpLocalPort = 0);
   bool close(uint8_t linkId, bool abort = false);
   bool remoteParamsQuery(uint8_t linkId, IPAddress& remoteIP, uint16_t& remoteParamsQuery);
 
@@ -94,6 +100,7 @@ public:
   size_t availData(uint8_t linkId);
 
   size_t recvData(uint8_t linkId, uint8_t buff[], size_t buffSize);
+  size_t recvDataWithInfo(uint8_t linkId, uint8_t buff[], size_t buffSize, IPAddress& remoteIP, uint16_t& remotePort);
   size_t sendData(uint8_t linkId, const uint8_t buff[], size_t dataLength, const char* udpHost, uint16_t udpPort);
   size_t sendData(uint8_t linkId, Stream& file, const char* udpHost, uint16_t udpPort);
   size_t sendData(uint8_t linkId, SendCallbackFnc callback, const char* udpHost, uint16_t udpPort);
@@ -134,6 +141,8 @@ private:
   bool syncLinkInfo();
   bool recvLenQuery();
   bool checkLinks();
+
+  bool sysStoreInternal(bool store); // AT 2
 };
 
 extern EspAtDrvClass EspAtDrv;

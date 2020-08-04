@@ -67,12 +67,19 @@ private:
 
 };
 
-class WiFiUDP : public WiFiUdpSender, protected EspAtDrvUdpDataCallback {
+class WiFiUDP : public WiFiUdpSender
+#ifdef WIFIESPAT1
+, protected EspAtDrvUdpDataCallback 
+#endif
+{
 public:
 
   WiFiUDP();
 
   virtual uint8_t begin(uint16_t);
+#ifndef WIFIESPAT1 //AT2
+  virtual uint8_t beginMulticast(IPAddress, uint16_t);
+#endif
   virtual void stop();
 
   // Listening for UDP packets
@@ -89,13 +96,22 @@ public:
   virtual int endPacket();
   using Print::write;
 
+#ifdef WIFIESPAT1
   virtual IPAddress remoteIP();
   virtual uint16_t remotePort();
 
 protected:
   virtual uint8_t readRxData(Stream* serial, size_t len); // EspAtDrvUdpDataCallback implementation
 
+#else
+  virtual IPAddress remoteIP() {return senderIP;}
+  virtual uint16_t remotePort() {return senderPort;}
+
+#endif
+
 private:
+
+  uint8_t begin(const char* ip, uint16_t port);
 
   uint8_t linkId = WIFIESPAT_NO_LINK;
   bool listening = false;
@@ -103,6 +119,11 @@ private:
   byte rxBuffer[WIFIESPAT_UDP_RX_BUFFER_SIZE];
   size_t rxBufferIndex = 0;
   size_t rxBufferLength = 0;
+
+#ifndef WIFIESPAT1 //AT2
+  IPAddress senderIP;
+  uint16_t senderPort;
+#endif
 };
 
 #endif

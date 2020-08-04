@@ -36,8 +36,8 @@ bool WiFiClass::init(Stream* serial, int8_t resetPin) {
   return ok;
 }
 
-void WiFiClass::setPersistent(bool _persistent) {
-  EspAtDrv.sysPersistent(_persistent);
+bool WiFiClass::setPersistent(bool persistent) {
+  return EspAtDrv.sysPersistent(persistent);
 }
 
 uint8_t WiFiClass::status() {
@@ -82,6 +82,12 @@ bool WiFiClass::setAutoConnect(bool autoConnect) {
 
 int WiFiClass::begin(const char* ssid, const char* passphrase, const uint8_t* bssid) {
   bool ok = EspAtDrv.joinAP(ssid, passphrase, bssid);
+  state = ok ? WL_CONNECTED : WL_CONNECT_FAILED;
+  return state;
+}
+
+int WiFiClass::beginEnterprise(const char* ssid, uint8_t method, const char* username, const char* passphrase, const char* identity, uint8_t security) {
+  bool ok = EspAtDrv.joinEAP(ssid, method,  identity, passphrase, username, security);
   state = ok ? WL_CONNECTED : WL_CONNECT_FAILED;
   return state;
 }
