@@ -30,12 +30,19 @@ int WiFiUdpSender::beginPacket(const char *host, uint16_t port) {
   if (stream) {
     endPacket();
   }
-  uint8_t linkId = EspAtDrv.connect("UDP", host, port);
+  uint8_t linkId;
+  if (listening) {
+    linkId = this->linkId; // AT allows to use the listener's linkId for sending
+  } else {
+    linkId = EspAtDrv.connect("UDP", host, port);
+  }
   if (linkId == NO_LINK)
     return false;
   stream = WiFiEspAtBuffManager.getBuffStream(linkId, 0, 0, WIFIESPAT_UDP_TX_BUFFER_SIZE);
   if (!stream) {
+   if (!listening) {
     EspAtDrv.close(linkId);
+   }
     return false;
   }
   stream->setUdpPort(host, port);
@@ -46,7 +53,11 @@ int WiFiUdpSender::endPacket() {
   if (!stream)
     return 0;
   flush();
-  stream->close();
+  if (listening) {
+    stream->free();
+  } else {
+    stream->close();
+  }
   stream = nullptr;
   return !getWriteError();
 }
@@ -101,36 +112,45 @@ uint16_t WiFiUDP::remotePort() {
 }
 #endif
 
-WiFiUDP::WiFiUDP() {
-}
 
-
-uint8_t WiFiUDP::begin(const char* ip, uint16_t port) {
+#ifndef WIFIESPAT1 // AT2 WiFiEspAtUDP functions
+uint8_t WiFiUdpSender::begin(const char* ip, uint16_t port) {
   if (linkId != NO_LINK) {
     stop();
   }
-#ifdef WIFIESPAT1
-  linkId = EspAtDrv.connect("UDP", ip, port, this, port);
-#else
   linkId = EspAtDrv.connect("UDP", ip, port, port);
-#endif
   listening = (linkId != NO_LINK);
   return listening;
 }
 
-uint8_t WiFiUDP::begin(uint16_t port) {
+uint8_t WiFiUdpSender::begin(uint16_t port) {
   return begin("0.0.0.0", port);
 }
 
-#ifndef WIFIESPAT1 //AT2 (virtual method would not be optimized away, even if not used)
-uint8_t WiFiUDP::beginMulticast(IPAddress ip, uint16_t port) {
+uint8_t WiFiUdpSender::beginMulticast(IPAddress ip, uint16_t port) {
   char s[16];
   EspAtDrv.ip2str(ip, s);
   return begin(s, port);
 }
+
+size_t WiFiUdpSender::availableForParse() {
+  if (linkId == NO_LINK)
+    return 0;
+  return EspAtDrv.availData(linkId);
+}
+
+size_t WiFiUdpSender::parsePacket(uint8_t* buffer, size_t size, IPAddress& remoteIP, uint16_t& remotePort) {
+  size_t len = availableForParse();
+  if (!len)
+    return 0;
+  if (len > size) {
+    len = size;
+  }
+  return EspAtDrv.recvDataWithInfo(linkId, buffer, len, remoteIP, remotePort);
+}
 #endif
 
-void WiFiUDP::stop() {
+void WiFiUdpSender::stop() {
   if (linkId == NO_LINK)
     return;
   if (stream) {
@@ -141,6 +161,17 @@ void WiFiUDP::stop() {
   listening = false;
 }
 
+#ifdef WIFIESPAT1
+uint8_t WiFiUDP::begin(uint16_t port) {
+  if (linkId != NO_LINK) {
+    stop();
+  }
+  linkId = EspAtDrv.connect("UDP", "0.0.0.0", port, this, port);
+  listening = (linkId != NO_LINK);
+  return listening;
+}
+#endif
+
 int WiFiUDP::parsePacket() {
   if (linkId == NO_LINK)
     return 0;
@@ -150,18 +181,8 @@ int WiFiUDP::parsePacket() {
   EspAtDrv.maintain();
   return available();
 #else
-  size_t len = EspAtDrv.availData(linkId);
-  if (!len)
-    return 0;
-  if (len > sizeof(rxBuffer)) {
-    len = sizeof(rxBuffer);
-  }
-  size_t l = EspAtDrv.recvDataWithInfo(linkId, rxBuffer, len, senderIP, senderPort);
-
-  if (l != len) // error
-    return 0;
-  rxBufferLength = len;
-  return len;
+  rxBufferLength = WiFiUdpSender::parsePacket(rxBuffer, sizeof(rxBuffer), senderIP, senderPort);
+  return rxBufferLength;
 #endif  
 }
 
@@ -207,27 +228,3 @@ uint8_t WiFiUDP::readRxData(Stream* serial, size_t len) {
   return OK;
 }
 #endif
-
-int WiFiUDP::beginPacket(const char *host, uint16_t port) {
-  if (!listening)
-    return WiFiUdpSender::beginPacket(host, port);
-  if (stream) {
-    endPacket();
-  }
-  // AT allows to use the listener's linkId
-  stream = WiFiEspAtBuffManager.getBuffStream(linkId, 0, 0, WIFIESPAT_UDP_TX_BUFFER_SIZE);
-  if (!stream)
-    return false;
-  stream->setUdpPort(host, port);
-  return true;
-}
-
-int WiFiUDP::endPacket() {
-  if (!listening)
-    return WiFiUdpSender::endPacket();
-  flush();
-  stream->free();
-  stream = nullptr;
-  return !getWriteError();
-}
-

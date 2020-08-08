@@ -227,10 +227,14 @@ The AT firmware supports only one TCP server.
 
 The Arduino UDP API requires to start a listening port to send an UDP message. This library doesn't require udp.begin() before udp.beginPacket(). 
 
+* `beginMulticast` works only with AT2
+* `availableForParse` for AT2 only. returns the size of the available message. see the WiFiEspAT2UDP example
+* `parsePacket(buffer, size, ip, port)` for AT2 only. to read the message into provided buffer. see the WiFiEspAT2UDP example 
+* `write(callback)` variant of write function for efficient sending with a callback function
+
 You can use WiFiUdpSender class if you only send messages. See the UdpSender.ino example.
 
-* `beginMulticast` works only with AT2
-* `write(callback)` variant of write function for efficient sending with a callback function 
+With AT2 You can use WiFiEspAtUDP class if you receive messages with the `parsePacket(buffer, size, ip, port)` function. WiFiEspAtUDP doesn't have internal buffer to receive the message with `parsePacket()` so it saves global memory. See the WiFiEspAT2UDP example. 
 
 ## Logging
 
@@ -245,7 +249,7 @@ For small MCU like the ATmega328p on Uno, the sketch size matters. With modern c
 
 With persistent WiFi connection WiFi.begin() and underlying functions are not used, resulting in smaller sketch size.
 
-Use WiFiUdpSender class if you only send UDP messages. WiFiUDP always allocates the receive buffer.
+Use WiFiUdpSender class if you only send UDP messages. You can use WiFiEspAtUDP with AT2. WiFiUDP always allocates the receive buffer required for AT1 UDP receive without passive mode and for AT2 to fulfill the Arduino UDP API.
 
 
 ## Advanced use
