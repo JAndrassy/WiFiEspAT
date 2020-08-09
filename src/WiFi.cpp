@@ -21,7 +21,7 @@
 #include "utility/EspAtDrv.h"
 
 // this statics are removed by compiler if not used
-char WiFiClass::fwVersion[10] = {0};
+char WiFiClass::fwVersion[15] = {0};
 char WiFiClass::ssid[33] = {0};
 char WiFiClass::name[33] = {0}; // hostname
 WiFiApData WiFiClass::apDataInternal[WIFIESPAT_INTERNAL_AP_LIST_SIZE];

@@ -22,7 +22,9 @@
 
 #include <stddef.h>
 
+#ifndef WIFIESPAT2 // for -D
 #define WIFIESPAT1
+#endif
 
 const uint8_t WIFIESPAT_LINKS_COUNT = 5;
 const uint8_t WIFIESPAT_NO_LINK = 255;

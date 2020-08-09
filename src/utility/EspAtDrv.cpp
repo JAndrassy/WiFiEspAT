@@ -96,11 +96,16 @@ bool EspAtDrvClass::reset(int8_t resetPin) {
   }
   if (!simpleCommand(PSTR("ATE0")) || // turn off echo. must work
       !simpleCommand(PSTR("AT+CIPMUX=1")) ||  // Enable multiple connections.
-#ifndef WIFIESPAT1 //AT2
-      !simpleCommand(PSTR("AT+SYSSTORE=0")) ||  // our default is persistent false
-#endif
       !simpleCommand(PSTR("AT+CIPRECVMODE=1"))) // Set TCP Receive Mode - passive
     return false;
+
+#ifndef WIFIESPAT1 //AT2
+   if (!simpleCommand(PSTR("AT+SYSSTORE=0"))) {// our default is persistent false
+     persistent = true;
+     LOG_WARN_PRINT_PREFIX();
+     LOG_WARN_PRINTLN(F("Error setting store mode. Is the firmware AT2?"));
+   }
+#endif
 
   // read default wifi mode
   cmd->print(F("AT+CWMODE?"));
@@ -1093,7 +1098,7 @@ size_t EspAtDrvClass::sendData(uint8_t linkId, Stream& file, const char* udpHost
     lastErrorCode = EspAtDrvError::LINK_NOT_ACTIVE;
     return 0;
   }
-  size_t len = 0;
+  uint32_t len = 0;
   while (file.available()) {
     size_t l = file.available();
     if (l > MAX_SEND_LENGTH) {
@@ -1109,21 +1114,31 @@ size_t EspAtDrvClass::sendData(uint8_t linkId, Stream& file, const char* udpHost
       cmd->print(F("\","));
       cmd->print(udpPort);
     }
-    if (!sendCommand(PSTR(">")))
+    if (!sendCommand(PSTR(">"))) {
+      LOG_ERROR_PRINT_PREFIX();
+      LOG_ERROR_PRINT(F("CIPSEND failed at "));
+      LOG_ERROR_PRINTLN(len);
+      lastErrorCode = EspAtDrvError::SEND;
       return 0;
+    }
     for (size_t i = 0; i < l; i++) {
       serial->write(file.read());
     }
     if (!readRX(PSTR("Recv ")))
       return 0;
-    len += atol(buffer + strlen("Recv "));
-    if (!readRX(PSTR("SEND "))) // SEND OK or SEND FAIL
-      return 0;
-    if (strcmp_P(buffer + strlen("SEND "), OK) != 0) {// FAIL
+    size_t sl = atol(buffer + strlen("Recv "));
+    len += sl;
+    if (!readRX(PSTR("SEND ")) || strcmp_P(buffer + strlen("SEND "), OK) != 0) {// FAIL
       LOG_ERROR_PRINT_PREFIX();
-      LOG_ERROR_PRINTLN(F("failed to send data"));
+      LOG_ERROR_PRINT(F("failed to send data at "));
+      LOG_ERROR_PRINTLN(len);
       lastErrorCode = EspAtDrvError::SEND;
       return 0;
+    }
+    if (l == MAX_SEND_LENGTH && sl < MAX_SEND_LENGTH) {
+      LOG_WARN_PRINT_PREFIX();
+      LOG_WARN_PRINT(F("Retardment of sending data at "));
+      LOG_WARN_PRINTLN(len);
     }
   }
   LOG_INFO_PRINT_PREFIX();
