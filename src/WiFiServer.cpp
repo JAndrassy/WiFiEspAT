@@ -25,11 +25,11 @@ WiFiServer::WiFiServer(uint16_t _port) {
   state = CLOSED;
 }
 
-void WiFiServer::begin(uint8_t maxConnCount, uint8_t serverTimeout) {
+void WiFiServer::begin(uint8_t maxConnCount, uint16_t serverTimeout) {
   state = EspAtDrv.serverBegin(port, maxConnCount, serverTimeout) ? LISTEN : CLOSED;
 }
 
-void WiFiServer::beginSSL(bool ca, uint8_t maxConnCount, uint8_t serverTimeout) {
+void WiFiServer::beginSSL(bool ca, uint8_t maxConnCount, uint16_t serverTimeout) {
   state = EspAtDrv.serverBegin(port, maxConnCount, serverTimeout, true, ca) ? LISTEN : CLOSED;
 }
 
@@ -56,3 +56,34 @@ WiFiServer::operator bool() {
   return (state != CLOSED);
 }
 
+size_t WiFiServer::writeToAllClients(const uint8_t *buf, size_t size) {
+  size_t ret = 0;
+  uint8_t linkIds[WIFIESPAT_LINKS_COUNT];
+  uint8_t l = EspAtDrv.clientLinkIds(linkIds);
+  for (uint8_t i = 0; i < l; i++) {
+    WiFiClient client(linkIds[i], port);
+    ret = client.write(buf, size);
+  }
+  return ret;
+}
+
+void WiFiServer::flushAllClients() {
+  uint8_t linkIds[WIFIESPAT_LINKS_COUNT];
+  uint8_t l = EspAtDrv.clientLinkIds(linkIds);
+  for (uint8_t i = 0; i < l; i++) {
+    WiFiClient client(linkIds[i], port);
+    client.flush();
+  }
+}
+
+size_t WiFiServerPrint::write(uint8_t c) {
+  return write(&c,1);
+}
+
+size_t WiFiServerPrint::write(const uint8_t *buf, size_t size) {
+  return writeToAllClients(buf, size);
+}
+
+void WiFiServerPrint::flush() {
+  flushAllClients();
+}

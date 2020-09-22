@@ -84,9 +84,10 @@ public:
   bool endSoftAP(bool persistent = false);
   bool softApQuery(char* ssid, char* passphrase, uint8_t& channel, uint8_t& encoding, uint8_t& maxConnections, bool& hidden);
 
-  bool serverBegin(uint16_t port, uint8_t maxConnCount = 1, uint8_t serverTimeout = 60, bool ssl = false, bool ca = false);
+  bool serverBegin(uint16_t port, uint8_t maxConnCount = 1, uint16_t serverTimeout = 60, bool ssl = false, bool ca = false);
   bool serverEnd();
   uint8_t clientLinkId(bool accept = false);
+  uint8_t clientLinkIds(uint8_t linkIds[]);
 
   uint8_t connect(const char* type, const char* host, uint16_t port, //
 #ifdef WIFIESPAT1

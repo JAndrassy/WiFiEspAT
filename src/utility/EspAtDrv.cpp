@@ -693,7 +693,7 @@ bool EspAtDrvClass::softApQuery(char* ssid, char* passphrase, uint8_t& channel, 
   return readOK();
 }
 
-bool EspAtDrvClass::serverBegin(uint16_t port, uint8_t maxConnCount, uint8_t serverTimeout, bool ssl, bool ca) {
+bool EspAtDrvClass::serverBegin(uint16_t port, uint8_t maxConnCount, uint16_t serverTimeout, bool ssl, bool ca) {
   maintain();
 
   LOG_INFO_PRINT_PREFIX();
@@ -740,6 +740,22 @@ uint8_t EspAtDrvClass::clientLinkId(bool accept) {
     }
   }
   return NO_LINK;
+}
+
+uint8_t EspAtDrvClass::clientLinkIds(uint8_t linkIds[]) {
+  maintain();
+  uint8_t l = 0;
+  for (int linkId = 0; linkId < LINKS_COUNT; linkId++) {
+    LinkInfo& link = linkInfo[linkId];
+    if (link.isConnected() && link.isIncoming() && !link.isClosing()) {
+      linkIds[l] = linkId;
+      l++;
+    }
+  }
+  LOG_INFO_PRINT_PREFIX();
+  LOG_INFO_PRINT(l);
+  LOG_INFO_PRINTLN(F(" link ids for server"));
+  return l;
 }
 
 uint8_t EspAtDrvClass::connect(const char* type, const char* host, uint16_t port,
