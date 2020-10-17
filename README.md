@@ -130,7 +130,7 @@ Resources:
 
 This library can work with AT firmware 2.1.x. AT firmware 2.1.x is build on Espressif RTOS SDK for esp8266 and esp32. 
 
-The flashing command of AT2 with esptool is `esptool.py write-flash @download.config`. I recommend to change in download.config file flash_mode to qio if your ESP module supports it and flash frequency to 40MHz if your module doesn't support 80MHz.
+The flashing command of AT2 with esptool is `esptool.py write_flash @download.config`. I recommend to change in download.config file flash_mode to qio if your ESP module supports it and flash frequency to 40MHz if your module doesn't support 80MHz.
 
 The AT 2.1 binary for esp8266 build by Espressif requires at least 2 MB flash and uses pins 15 as TX and 13 as RX. To have the AT firmware communicating on usual pins 1 as TX and 3 as RX, you can use at flashing of the firmware AT2_esp8266_factory_param_tx1rx3.bin from extras folder of this library instead of factory_param.bin bundled with the AT firmware.
 
@@ -286,7 +286,7 @@ For some functions 0 or false as returned value can have a meaning of error or b
 
 ### UART Flow Control
 
-The AT firmware sends notifications about different events without the host requesting them. Examples of this events are if data arrive for a connection or connection is closed. Without flow control of Serial interface some of this events can get lost in buffer overflow if they arrive in bulk. As compensation for lost events, the WiFiEspAT library polls the state of the connections. This adds to time spent in library functions.
+The AT firmware sends notifications about different events without the host requesting them. Examples of these events are if data arrive for a connection or connection is closed. Without flow control of Serial interface some of these events can get lost in buffer overflow if they arrive in bulk. As compensation for lost events, the WiFiEspAT library polls the state of the connections. This adds to time spent in library functions.
 
 If you can setup for the WiFiEspAT library a Serial connection with flow control, you can uncomment `#define ESPATDRV_ASSUME_FLOW_CONTROL` in EspAtDrv.cpp or define ESPATDRV_ASSUME_FLOW_CONTROL in boards.local.txt for the board. This will remove the polling of connections state.
 
