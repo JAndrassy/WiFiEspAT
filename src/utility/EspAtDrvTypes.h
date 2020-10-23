@@ -20,7 +20,7 @@
 #ifndef _ESPATDRV_TYPES_H_
 #define _ESPATDRV_TYPES_H_
 
-#include <stddef.h>
+#include <Arduino.h>
 
 #ifndef WIFIESPAT2 // for -D
 #define WIFIESPAT1
