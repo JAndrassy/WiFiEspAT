@@ -1420,7 +1420,7 @@ bool EspAtDrvClass::readRX(PGM_P expected, bool bufferData, bool listItem) {
       timeout++;
       continue;
     }
-    timeout = 0; // AT firmware responded
+
     if (buffer[0] == '>') { // AT+CIPSEND prompt
 #ifdef WIFIESPAT1
       // AT versions 1.x send a space after >. we must clear it
@@ -1428,8 +1428,12 @@ bool EspAtDrvClass::readRX(PGM_P expected, bool bufferData, bool listItem) {
 #endif      
       buffer[1] = 0;
       l = 1;
+      timeout = 0; // AT firmware responded
     } else {
       l += serial->readBytes(buffer + l, 1); // read second byte with stream's timeout
+      if (l < 2)
+    	  continue;  // We haven't read requested 2 bytes, something went wrong
+      timeout = 0; // AT firmware responded
       if (buffer[0] == '\r' && buffer[1] == '\n') // empty line. skip it
         continue;
       char terminator = '\n';
