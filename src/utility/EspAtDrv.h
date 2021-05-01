@@ -111,7 +111,7 @@ public:
   bool dhcpStateQuery(bool& staDHCP, bool& softApDHCP); // they have nothing in common, but use the same command
   bool mDNS(const char* hostname, const char* serverName, uint16_t serverPort);
   bool resolve(const char* hostname, IPAddress& result);
-  bool sntpCfg(int8_t timezone, const char* server1, const char* server2);
+  bool sntpCfg(const char* server1, const char* server2);
   unsigned long sntpTime();
   bool ping(const char* hostname);
 

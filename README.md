@@ -68,7 +68,7 @@ The passive receive mode of the AT firmware is not supported for UDP and secure 
 
 The AT 2 has some problem with UDP messages in passive receive mode. The received message must be read at once so received message size is limited to configured buffer size with this library. If multiple messages are received before the first message is read, the firmware concatenates the messages and doesn't report the sizes of the individual messages.
 
-For SSL passive receive mode the AT 2 always reports more data available then there really are. The firmware then closes the link if all data are read so next read ends with an unspecified error.
+For SSL passive receive mode the AT 2 always reports more data available than there really are. The firmware then closes the link if all data are read so next read ends with an unspecified error.
 
 ### Capabilities comparison
 
@@ -76,22 +76,23 @@ The table focuses on limits of AT firmwares in passive receive mode.
 
 |Property|AT 1.7|AT 2.1 esp8266|AT 2.1 ESP32|JB AT 1.7 (1)|
 |---| :---: | :---: | :---: | :---: |
-|more then one TCP server|✗|✗|✗|n/a|
-|SSL server|✗|✗|🗸(4)|✗|
-|TCP client|🗸|🗸|🗸|🗸|
-|SSL client|✗|🗸(2)|🗸(2)|🗸|
-|SSL client TLS 1.2|✗|✗|✗|🗸|
-|UDP (3)|🗸|🗸|🗸|✗|
+|more than one TCP server|✗|✗|✗|n/a|
+|SSL server|✗|✗|✓(4)|✗|
+|TCP client|✓|✓|✓|✓|
+|SSL client|✗|✓(2)|✓(2)|✓|
+|SSL client TLS 1.2|✗(5)|✗(5)|✗(5)|✓|
+|UDP (3)|✓|✓|✓|✗|
 |UDP backlog|✗|✗|✗|n/a| 
-|UDP multicast|✗|🗸|🗸|n/a| 
-|SoftAP|🗸|🗸|🗸|✗|
-|WPA2 Enterprise|✗|✗|🗸|✗|
-|epoch time|Lobo|🗸|🗸|✗|
+|UDP multicast|✗|✓|✓|n/a| 
+|SoftAP|✓|✓|✓|✗|
+|WPA2 Enterprise|✗|✗|✓|✗|
+|epoch time|Lobo|✓|✓|✗|
 
 * (1) [Jiri Bilek's firmware](https://github.com/JiriBilek/ESP_ATMod#description)
 * (2) larger size of available bytes is reported (unencrypted size)
-* (3) it is not possible to receive UDP message larger then the configured buffer
-* (4) SSL server expects all client data to be read at once, so it only works with large buffer 
+* (3) it is not possible to receive UDP message larger than the configured buffer
+* (4) SSL server expects all client data to be read at once, so it only works with large buffer
+* (5) it is possible to use the [SSLClient library](https://github.com/OPEnSLab-OSU/SSLClient) for TLS 1.2 on 32bit MCU
 
 ## AT firmware versions
 
@@ -199,7 +200,7 @@ This library implements Arduino WiFi networking API. The last version of this AP
 * `configureAP` - to configure AP. see the SetupPersistentAP.ino tool example
 * AP parameters getters - apMacAddress, apSSID, apPassphrase, apEncryptionType, apMaxConnections, apIsHidden, apDhcpIsEnabled, apIP, apGatewayIP, apSubnetMask (see PrintPersistentSettings.ino tool example)
 * `startMDNS` to execute AT+MDNS. refer to AT reference for parameters
-* `sntp` - to enable and configure SNTP time zone and servers. see SNTPTime.ino example
+* `sntp` - to enable and configure SNTP servers. see SNTPTime.ino example
 * `reset` - to reset or wake-up the ESP. see DeepSleepAndHwReset.ino example
 * `sleepMode`- to set the level of automatic sleep mode. possible modes are WIFI_NONE_SLEEP, WIFI_LIGHT_SLEEP and WIFI_MODEM_SLEEP
 * `deepSleep`- to turn-off the ESP. see DeepSleepAndHwReset.ino example
@@ -264,7 +265,7 @@ It is recommended to use WiFiClient.flush() after completing the output. WiFiCli
 
 The buffers size can be changed in WiFiEspAtConfig.h or set on build command line. The TCP TX buffer can be set to 0 and the RX buffer must be at least 1 (for peek()), but then please use buffers in sketch for example with [StreamLib's](https://github.com/jandrassy/StreamLib) wrapper class BufferedPrint. 
 
-The size of the UDP TX buffer can be set to zero in WiFiEspAtConfig.h if the complete message is sent with one print(msg), one write(msg, length) or with write(callback). Otherwise the size of the UDP buffers limits the size of the message. If the composed message is larger then the buffer it will be send as partial UDP messages. If the size of received message with AT1 is larger then the UDP TX buffer, the message will be dropped (with WiFi.getLastDriverError() set to EspAtDrvError::UDP_LARGE).
+The size of the UDP TX buffer can be set to zero in WiFiEspAtConfig.h if the complete message is sent with one print(msg), one write(msg, length) or with write(callback). Otherwise the size of the UDP buffers limits the size of the message. If the composed message is larger than the buffer it will be send as partial UDP messages. If the size of received message with AT1 is larger than the UDP TX buffer, the message will be dropped (with WiFi.getLastDriverError() set to EspAtDrvError::UDP_LARGE).
 
 To set different custom sizes of buffers for different boards, you can create a file boards.local.txt next to boards.txt file in hardware package. Set build.extra_flags for individual boards. For example for Mega you can add to boards.local.txt a line with -D options to define the macros.
 

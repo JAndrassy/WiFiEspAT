@@ -42,7 +42,7 @@ void setup() {
   }
   Serial.println();
 
-  WiFi.sntp(TIME_ZONE, "us.pool.ntp.org");
+  WiFi.sntp("us.pool.ntp.org");
 
   Serial.println("Waiting for SNTP");
   while (WiFi.getTime() < SECS_YR_2000) {
@@ -51,7 +51,7 @@ void setup() {
   }
   Serial.println();
 
-  setTime(WiFi.getTime());
+  setTime(WiFi.getTime() + (SECS_PER_HOUR * TIME_ZONE));
 
 }
 

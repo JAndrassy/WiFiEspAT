@@ -1291,15 +1291,13 @@ bool EspAtDrvClass::resolve(const char* hostname, IPAddress& result) {
   return readOK();
 }
 
-bool EspAtDrvClass::sntpCfg(int8_t timezone, const char* server1, const char* server2) {
+bool EspAtDrvClass::sntpCfg(const char* server1, const char* server2) {
   maintain();
 
   LOG_INFO_PRINT_PREFIX();
   LOG_INFO_PRINTLN(F("SNTP config"));
 
-  cmd->print(F("AT+CIPSNTPCFG=1,"));
-  cmd->print(timezone);
-  cmd->print(",\"");
+  cmd->print(F("AT+CIPSNTPCFG=1,0,\""));
   cmd->print(server1);
   if (server2) {
     cmd->print((FSH_P) QOUT_COMMA_QOUT);

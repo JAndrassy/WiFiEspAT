@@ -105,7 +105,7 @@ public:
   bool ping(const char* hostname);
   bool ping(IPAddress ip);
 
-  bool sntp(int8_t timezone, const char* server1, const char* server2 = nullptr);
+  bool sntp(const char* server1, const char* server2 = nullptr);
   unsigned long getTime();
 
   // AP related functions:

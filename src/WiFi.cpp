@@ -250,8 +250,8 @@ bool WiFiClass::ping(IPAddress ip) {
   return ping(s);
 }
 
-bool WiFiClass::sntp(int8_t timezone, const char* server1, const char* server2) {
-  return EspAtDrv.sntpCfg(timezone, server1, server2);
+bool WiFiClass::sntp(const char* server1, const char* server2) {
+  return EspAtDrv.sntpCfg(server1, server2);
 }
 
 unsigned long WiFiClass::getTime() {
