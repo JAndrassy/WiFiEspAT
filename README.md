@@ -64,9 +64,9 @@ AT 1.7 is only for esp8266.
 
 The passive receive mode of the AT firmware is not supported for UDP and secure connection (SSL). For this reason UDP received message size is limited to configured buffer size and secure connection (SSL, https) is not supported.
 
-### AT 2.1
+### AT 2
 
-The AT 2 has some problem with UDP messages in passive receive mode. The received message must be read at once so received message size is limited to configured buffer size with this library. If multiple messages are received before the first message is read, the firmware concatenates the messages and doesn't report the sizes of the individual messages.
+The AT 2 has a small problem with UDP messages in passive receive mode. The received message must be read at once so received message size is limited to configured buffer size with this library.
 
 For SSL passive receive mode the AT 2 always reports more data available than there really are. The firmware then closes the link if all data are read so next read ends with an unspecified error.
 
@@ -74,7 +74,7 @@ For SSL passive receive mode the AT 2 always reports more data available than th
 
 The table focuses on limits of AT firmwares in passive receive mode.
 
-|Property|AT 1.7|AT 2.1 esp8266|AT 2.1 ESP32|JB AT 1.7 (1)|
+|Property|AT 1.7|AT 2 esp8266|AT 2 ESP32|JB AT 1.7 (1)|
 |---| :---: | :---: | :---: | :---: |
 |more than one TCP server|✗|✗|✗|n/a|
 |SSL server|✗|✗|✓(4)|✗|
@@ -127,18 +127,19 @@ Resources:
 * [AT 1.7 reference](https://www.espressif.com/en/support/download/overview?keys=AT+Instruction+Set&field_type_tid%5B%5D=14) - it contains firmware flashing instructions too
 * [AT LoBo flashing instructions](https://github.com/loboris/ESP8266_AT_LoBo/#flashing). First install esptool.py. If you download the AT LoBo repository as zip, it contains the firmware binaries and a script to flash them.
 
-### AT 2.1
+### AT 2
 
-This library can work with AT firmware 2.1.x. AT firmware 2.1.x is build on Espressif RTOS SDK for esp8266 and esp32. 
+This library can work with AT firmware version 2.1 or higher. AT firmware 2 is build on Espressif RTOS SDK for esp8266 and esp32. 
 
 The flashing command of AT2 with esptool is `esptool.py write_flash @download.config`. I recommend to change in download.config file flash_mode to qio if your ESP module supports it and flash frequency to 40MHz if your module doesn't support 80MHz.
 
-The AT 2.1 binary for esp8266 build by Espressif requires at least 2 MB flash and uses pins 15 as TX and 13 as RX. To have the AT firmware communicating on usual pins 1 as TX and 3 as RX, you can use at flashing of the firmware AT2_esp8266_factory_param_tx1rx3.bin from extras folder of this library instead of factory_param.bin bundled with the AT firmware.
+The AT 2 binary for esp8266 build by Espressif requires at least 2 MB flash and uses pins 15 as TX and 13 as RX. To have the AT firmware communicating on usual pins 1 as TX and 3 as RX, you can use at flashing of the firmware AT2_esp8266_factory_param_tx1rx3.bin from extras folder of this library instead of factory_param.bin bundled with the AT firmware.
 
-It is possible to build the AT 2 for esp8266 with 1 MB flash, but Espressif didn't publish a binary for this option. You can download it [here](https://github.com/jandrassy/UnoWiFiDevEdSerial1/wiki/files/ESP8266-1MB-tx1rx3-AT_V2.1.zip).
+It is possible to build the AT 2 for esp8266 with 1 MB flash, but Espressif didn't publish a binary for this option. You can download it here: [2.2](https://github.com/jandrassy/UnoWiFiDevEdSerial1/wiki/files/ESP8266-1MB-tx1rx3-AT_V2.2.zip), [2.1](https://github.com/jandrassy/UnoWiFiDevEdSerial1/wiki/files/ESP8266-1MB-tx1rx3-AT_V2.1.zip).
 
 Resources:
 * [the Espressif AT2 binaries](https://docs.espressif.com/projects/esp-at/en/latest/AT_Binary_Lists/index.html)
+* [the Espressif AT2 releases on GitHub](https://github.com/espressif/esp-at/releases)
 
 ### Flashing tools
 
