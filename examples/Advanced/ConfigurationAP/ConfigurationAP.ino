@@ -138,6 +138,7 @@ void configAP() {
           Serial.println("Connection successful. Ending AP.");
           server.end();
           WiFi.endAP(true);
+          return;
         }
       }
     }
