@@ -1218,6 +1218,10 @@ size_t EspAtDrvClass::sendData(uint8_t linkId, SendCallbackFnc callback, const c
 bool EspAtDrvClass::setHostname(const char* hostname) {
   maintain();
 
+  uint8_t mode = wifiMode | WIFI_MODE_STA; // turn on STA, leave SoftAP as it is
+  if (!setWifiMode(mode, false))
+    return false;  // can't set hostname without sta mode
+
   LOG_INFO_PRINT_PREFIX();
   LOG_INFO_PRINT(F("set hostname "));
   LOG_INFO_PRINTLN(hostname);
