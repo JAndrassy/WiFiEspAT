@@ -374,12 +374,14 @@ bool EspAtDrvClass::joinAP(const char* ssid, const char* password, const uint8_t
 #ifdef WIFIESPAT1
   if (persistent) {
 #endif
-    cmd->print(F("AT+CWJAP=\""));
+    cmd->print(F("AT+CWJAP"));
 #ifdef WIFIESPAT1
   } else {
-    cmd->print(F("AT+CWJAP_CUR=\""));
+    cmd->print(F("AT+CWJAP_CUR"));
   }
 #endif
+ if (ssid) {
+  cmd->print(F("=\""));
   cmd->print(ssid);
   if (password) {
     cmd->print((FSH_P) QOUT_COMMA_QOUT);
@@ -398,6 +400,7 @@ bool EspAtDrvClass::joinAP(const char* ssid, const char* password, const uint8_t
     }
   }
   cmd->print('"');
+ }
   if (!sendCommand())
     return false;
   if (persistent) {

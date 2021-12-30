@@ -123,8 +123,8 @@ GitHub user loboris (Boris Lovosevic) builds customized versions of AT firmware 
 Jiri Bilek created [an alternative AT 1.7 firmware implementation](https://github.com/JiriBilek/ESP_ATMod) over esp8266 Arduino core and WiFi library. This supports SSL TLS1.2 connection in passive mode with this library. Please, be aware of the limitations of Jiri's firmware.
 
 Resources:
-* [the Espressif binaries](https://www.espressif.com/en/support/download/at?keys=&field_type_tid%5B%5D=14) - versions 1.7.x 
-* [AT 1.7 reference](https://www.espressif.com/en/support/download/overview?keys=AT+Instruction+Set&field_type_tid%5B%5D=14) - it contains firmware flashing instructions too
+* [the Espressif binaries](https://github.com/espressif/ESP8266_NONOS_SDK/releases) - versions 1.7.x in NONOS SDK 3.0.x
+* [AT 1.7 reference](https://www.espressif.com/en/support/documents/technical-documents?keys=Non-OS+AT&field_type_tid%5B%5D=14) - it contains firmware flashing instructions too
 * [AT LoBo flashing instructions](https://github.com/loboris/ESP8266_AT_LoBo/#flashing). First install esptool.py. If you download the AT LoBo repository as zip, it contains the firmware binaries and a script to flash them.
 
 ### AT 2
@@ -189,6 +189,7 @@ This library implements Arduino WiFi networking API. The last version of this AP
 ### the WiFi object differences
 
 * `init` command to set the Serial interface used for communication
+* `begin` for AT 1.7 begin() without parameters (joining remembered WiFi) is not available
 * `beginEnterprise` AT 2 only. to connect to WPA2 Enterprise network (sorry, it is not tested)
 * `setPersistent` to set the remembering of the following WiFi connection (see the SetupPersistentWiFiConnection.ino tool example)
 * `setAutoConnect` to set the automatic connection to remembered WiFi AP

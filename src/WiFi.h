@@ -65,7 +65,12 @@ public:
   bool setPersistent(bool persistent = true);
 
   bool setAutoConnect(bool autoConnect);
+
+#ifdef WIFIESPAT1
   int begin(const char* ssid, const char *passphrase = nullptr, const uint8_t* bssid = nullptr);
+#else
+  int begin(const char* ssid = nullptr, const char *passphrase = nullptr, const uint8_t* bssid = nullptr);
+#endif
   int beginEnterprise(const char* ssid, uint8_t method, const char* username, const char* passphrase, const char* identity, uint8_t security);
   int disconnect(bool persistent = false);
 
@@ -134,7 +139,7 @@ public:
 
   bool sleepMode(EspAtSleepMode mode);
   bool deepSleep();
-  bool reset(uint8_t resetPin);
+  bool reset(uint8_t resetPin = -1);
 
 private:
   uint8_t mapAtEnc2ArduinoEnc(uint8_t encryptionType);
