@@ -95,7 +95,7 @@ public:
 #endif      
       uint16_t udpLocalPort = 0);
   bool close(uint8_t linkId, bool abort = false);
-  bool remoteParamsQuery(uint8_t linkId, IPAddress& remoteIP, uint16_t& remoteParamsQuery);
+  bool remoteParamsQuery(uint8_t linkId, IPAddress& remoteIP, uint16_t& remotePort, uint16_t& localPort);
 
   bool connected(uint8_t linkId);
   size_t availData(uint8_t linkId);

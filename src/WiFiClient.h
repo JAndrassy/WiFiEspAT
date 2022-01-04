@@ -63,8 +63,11 @@ public:
   virtual uint8_t connected();
   uint8_t status();
 
+  // remoteIP and the ports are not stored
+  // every call to these functions retrieves the value from AT firmware
   IPAddress remoteIP();
   uint16_t remotePort();
+  uint16_t localPort();
 
   using Print::write;
 

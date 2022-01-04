@@ -845,7 +845,7 @@ bool EspAtDrvClass::close(uint8_t linkId, bool abort) {
   return sendCommand();
 }
 
-bool EspAtDrvClass::remoteParamsQuery(uint8_t linkId, IPAddress& remoteIP, uint16_t& remotePort) {
+bool EspAtDrvClass::remoteParamsQuery(uint8_t linkId, IPAddress& remoteIP, uint16_t& remotePort, uint16_t& localPort) {
   maintain();
 
   LOG_INFO_PRINT_PREFIX();
@@ -868,6 +868,8 @@ bool EspAtDrvClass::remoteParamsQuery(uint8_t linkId, IPAddress& remoteIP, uint1
         remoteIP.fromString(tok);
         tok = strtok(NULL, delim); // <remote port>
         remotePort = atoi(tok);
+        tok = strtok(NULL, delim); // <local port>
+        localPort = atoi(tok);
         readOK();
         return true;
       }

@@ -96,8 +96,9 @@ size_t WiFiUdpSender::write(SendCallbackFnc callback) {
 IPAddress WiFiUDP::remoteIP() {
   IPAddress ip;
   uint16_t port = 0;
+  uint16_t lport = 0;
   if (linkId != NO_LINK) {
-    EspAtDrv.remoteParamsQuery(linkId, ip, port);
+    EspAtDrv.remoteParamsQuery(linkId, ip, port, lport);
   }
   return ip;
 }
@@ -105,11 +106,13 @@ IPAddress WiFiUDP::remoteIP() {
 uint16_t WiFiUDP::remotePort() {
   IPAddress ip;
   uint16_t port = 0;
+  uint16_t lport = 0;
   if (linkId != NO_LINK) {
-    EspAtDrv.remoteParamsQuery(linkId, ip, port);
+    EspAtDrv.remoteParamsQuery(linkId, ip, port, lport);
   }
   return port;
 }
+
 #endif
 
 
