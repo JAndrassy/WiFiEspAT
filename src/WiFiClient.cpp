@@ -181,11 +181,7 @@ uint16_t WiFiClient::remotePort() {
 }
 
 uint16_t WiFiClient::localPort() {
-  IPAddress ip;
-  uint16_t port = 0;
-  uint16_t lport = 0;
-  if (stream && stream->getLinkId() != NO_LINK) {
-    EspAtDrv.remoteParamsQuery(stream->getLinkId(), ip, port, lport);
-  }
-  return lport;
+  if (stream && stream->getLinkId() == NO_LINK)
+    return 0;
+  return EspAtDrv.localPortQuery(stream->getLinkId());
 }

@@ -33,9 +33,14 @@ const uint8_t LINK_IS_INCOMING = (1 << 2);
 const uint8_t LINK_IS_ACCEPTED = (1 << 3);
 const uint8_t LINK_IS_UDP_LISTNER = (1 << 4);
 
+//#define WIFIESPAT_MULTISERVER
+
 struct LinkInfo {
   uint8_t flags = 0;
   size_t available = 0;
+#ifdef WIFIESPAT_MULTISERVER
+  uint16_t localPort = 0;
+#endif
 
 #ifdef WIFIESPAT1
   EspAtDrvUdpDataCallback* udpDataCallback;
@@ -86,8 +91,8 @@ public:
 
   bool serverBegin(uint16_t port, uint8_t maxConnCount = 1, uint16_t serverTimeout = 60, bool ssl = false, bool ca = false);
   bool serverEnd();
-  uint8_t clientLinkId(bool accept = false);
-  uint8_t clientLinkIds(uint8_t linkIds[]);
+  uint8_t clientLinkId(uint16_t serverPort, bool accept = false);
+  uint8_t clientLinkIds(uint16_t serverPort, uint8_t linkIds[]);
 
   uint8_t connect(const char* type, const char* host, uint16_t port, //
 #ifdef WIFIESPAT1
@@ -95,6 +100,8 @@ public:
 #endif      
       uint16_t udpLocalPort = 0);
   bool close(uint8_t linkId, bool abort = false);
+
+  uint16_t localPortQuery(uint8_t linkId);
   bool remoteParamsQuery(uint8_t linkId, IPAddress& remoteIP, uint16_t& remotePort, uint16_t& localPort);
 
   bool connected(uint8_t linkId);

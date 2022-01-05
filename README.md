@@ -76,7 +76,7 @@ The table focuses on limits of AT firmwares in passive receive mode.
 
 |Property|AT 1.7|AT 2 esp8266|AT 2 ESP32|JB AT 1.7 (1)|
 |---| :---: | :---: | :---: | :---: |
-|more than one TCP server|✗|✗|✗|n/a|
+|more than one TCP server|✗|✗|✗|✓|
 |SSL server|✗|✗|✓(4)|✗|
 |TCP client|✓|✓|✓|✓|
 |SSL client|✗|✓(2)|✓(2)|✓|
@@ -86,7 +86,7 @@ The table focuses on limits of AT firmwares in passive receive mode.
 |UDP multicast|✗|✓|✓|n/a| 
 |SoftAP|✓|✓|✓|✗|
 |WPA2 Enterprise|✗|✗|✓|✗|
-|epoch time|Lobo|✓|✓|✗|
+|epoch time|Lobo|✓|✓|✓|
 
 * (1) [Jiri Bilek's firmware](https://github.com/JiriBilek/ESP_ATMod#description)
 * (2) larger size of available bytes is reported (unencrypted size)

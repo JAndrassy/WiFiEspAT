@@ -727,12 +727,19 @@ bool EspAtDrvClass::serverEnd() {
   return simpleCommand(PSTR("AT+CIPSERVER=0"));
 }
 
-uint8_t EspAtDrvClass::clientLinkId(bool accept) {
+uint8_t EspAtDrvClass::clientLinkId(uint16_t serverPort, bool accept) {
   maintain();
   for (int linkId = 0; linkId < LINKS_COUNT; linkId++) {
     LinkInfo& link = linkInfo[linkId];
     if (link.isConnected() && link.isIncoming() && !link.isClosing() && !link.isAccepted()
         && (link.available || accept)) {
+#ifdef WIFIESPAT_MULTISERVER
+      if (!link.localPort) {
+        checkLinks();
+      }
+      if (serverPort != link.localPort)
+        continue;
+#endif
       LOG_INFO_PRINT_PREFIX();
       LOG_INFO_PRINT(F("incoming linkId "));
       LOG_INFO_PRINTLN(linkId);
@@ -745,12 +752,19 @@ uint8_t EspAtDrvClass::clientLinkId(bool accept) {
   return NO_LINK;
 }
 
-uint8_t EspAtDrvClass::clientLinkIds(uint8_t linkIds[]) {
+uint8_t EspAtDrvClass::clientLinkIds(uint16_t serverPort, uint8_t linkIds[]) {
   maintain();
   uint8_t l = 0;
   for (int linkId = 0; linkId < LINKS_COUNT; linkId++) {
     LinkInfo& link = linkInfo[linkId];
     if (link.isConnected() && link.isIncoming() && !link.isClosing()) {
+#ifdef WIFIESPAT_MULTISERVER
+      if (!link.localPort) {
+        checkLinks();
+      }
+      if (serverPort != link.localPort)
+        continue;
+#endif
       linkIds[l] = linkId;
       l++;
     }
@@ -804,6 +818,11 @@ uint8_t EspAtDrvClass::connect(const char* type, const char* host, uint16_t port
     cmd->print(',');
     cmd->print(udpLocalPort);
     cmd->print(",2");
+#ifdef WIFIESPAT_MULTISERVER
+    link.localPort = udpLocalPort;
+  } else {
+    link.localPort = 0;
+#endif
   }
   link.flags = LINK_CONNECTED;
   if (!sendCommand()) {
@@ -845,6 +864,18 @@ bool EspAtDrvClass::close(uint8_t linkId, bool abort) {
   return sendCommand();
 }
 
+uint16_t EspAtDrvClass::localPortQuery(uint8_t linkId) {
+#ifdef WIFIESPAT_MULTISERVER
+  if (linkInfo[linkId].localPort != 0)
+    return linkInfo[linkId].localPort;
+#endif
+  IPAddress remoteIP;
+  uint16_t remotePort;
+  uint16_t localPort = 0;
+  remoteParamsQuery(linkId, remoteIP, remotePort, localPort);
+  return localPort;
+}
+
 bool EspAtDrvClass::remoteParamsQuery(uint8_t linkId, IPAddress& remoteIP, uint16_t& remotePort, uint16_t& localPort) {
   maintain();
 
@@ -870,6 +901,9 @@ bool EspAtDrvClass::remoteParamsQuery(uint8_t linkId, IPAddress& remoteIP, uint1
         remotePort = atoi(tok);
         tok = strtok(NULL, delim); // <local port>
         localPort = atoi(tok);
+#ifdef WIFIESPAT_MULTISERVER
+        linkInfo[linkId].localPort = localPort;
+#endif
         readOK();
         return true;
       }
@@ -1508,6 +1542,9 @@ bool EspAtDrvClass::readRX(PGM_P expected, bool bufferData, bool listItem) {
       LinkInfo& link = linkInfo[linkId];
       if (link.available == 0 && (!link.isConnected() || link.isClosing())) { // incoming connection (and we could miss CLOSED)
         link.flags = LINK_CONNECTED | LINK_IS_INCOMING;
+#ifdef WIFIESPAT_MULTISERVER
+        link.localPort = 0;
+#endif
         LOG_DEBUG_PRINTLN((FSH_P) PROCESSED);
       } else {
         LOG_DEBUG_PRINTLN((FSH_P) IGNORED);
@@ -1681,7 +1718,9 @@ bool EspAtDrvClass::recvLenQuery() {
   }
   return readOK();
 }
+#endif
 
+#if !defined(ESPATDRV_ASSUME_FLOW_CONTROL) || defined(WIFIESPAT_MULTISERVER)
 bool EspAtDrvClass::checkLinks() {
   maintain();
   cmd->print((FSH_P) AT_CIPSTATUS);
@@ -1691,6 +1730,15 @@ bool EspAtDrvClass::checkLinks() {
   while (readRX(CIPSTATUS, true, true)) {
     uint8_t linkId = buffer[strlen("+CIPSTATUS:")] - 48;
     ok[linkId] = true;
+#ifdef WIFIESPAT_MULTISERVER
+    const char* delim = ",\"";
+    char* tok = strtok(buffer, delim); // +CIPSTATUS:<link  ID>
+    tok = strtok(NULL, delim); // <type>
+    tok = strtok(NULL, delim); // <remote IP>
+    tok = strtok(NULL, delim); // <remote port>
+    tok = strtok(NULL, delim); // <local port>
+    linkInfo[linkId].localPort = atoi(tok);
+#endif
   }
   for (int linkId = 0; linkId < LINKS_COUNT; linkId++) {
     LinkInfo& link = linkInfo[linkId];

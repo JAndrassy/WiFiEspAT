@@ -45,7 +45,7 @@ uint8_t WiFiServer::status() {
 
 WiFiClient WiFiServer::available(bool accept) {
   if (state != CLOSED) {
-    uint8_t linkId = EspAtDrv.clientLinkId(accept);
+    uint8_t linkId = EspAtDrv.clientLinkId(port, accept);
     if (linkId != NO_LINK)
       return WiFiClient(linkId, port);
   }
@@ -59,7 +59,7 @@ WiFiServer::operator bool() {
 size_t WiFiServer::writeToAllClients(const uint8_t *buf, size_t size) {
   size_t ret = 0;
   uint8_t linkIds[WIFIESPAT_LINKS_COUNT];
-  uint8_t l = EspAtDrv.clientLinkIds(linkIds);
+  uint8_t l = EspAtDrv.clientLinkIds(port, linkIds);
   for (uint8_t i = 0; i < l; i++) {
     WiFiClient client(linkIds[i], port);
     ret = client.write(buf, size);
@@ -69,7 +69,7 @@ size_t WiFiServer::writeToAllClients(const uint8_t *buf, size_t size) {
 
 void WiFiServer::flushAllClients() {
   uint8_t linkIds[WIFIESPAT_LINKS_COUNT];
-  uint8_t l = EspAtDrv.clientLinkIds(linkIds);
+  uint8_t l = EspAtDrv.clientLinkIds(port, linkIds);
   for (uint8_t i = 0; i < l; i++) {
     WiFiClient client(linkIds[i], port);
     client.flush();
