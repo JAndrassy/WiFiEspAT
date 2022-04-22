@@ -21,7 +21,7 @@ SoftwareSerial Serial1(6, 7); // RX, TX
 #define AT_BAUD_RATE 115200
 #endif
 
-const char* server = "arduino.cc";
+const char* server = "arduino.tips";
 
 const byte ESP_RESET_PIN = 12;
 const long SLEEP_INTERVAL = 30000;
