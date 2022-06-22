@@ -61,7 +61,7 @@ The AT firmwares are limited to one TCP server.
 
 ### AT 1.7
 
-AT 1.7 is only for esp8266.
+AT 1.7 is only for esp8266 and is better on esp8266 than AT 2.
 
 The passive receive mode of the AT firmware is not supported for UDP and secure connection (SSL). For this reason UDP received message size is limited to configured buffer size and secure connection (SSL, https) is not supported.
 
@@ -69,7 +69,7 @@ The passive receive mode of the AT firmware is not supported for UDP and secure 
 
 The AT 2 has a small problem with UDP messages in passive receive mode. The received message must be read at once so received message size is limited to configured buffer size with this library.
 
-For SSL passive receive mode the AT 2 always reports more data available than there really are. The firmware then closes the link if all data are read so next read ends with an unspecified error.
+AT 2 is for esp32. Versions 2.1 and 2.2 were for esp8266 too, but are not reliable.
 
 ### Capabilities comparison
 
@@ -80,7 +80,7 @@ The table focuses on limits of AT firmwares in passive receive mode.
 |more than one TCP server|✗|✗|✗|✓|
 |SSL server|✗|✗|✓(4)|✗|
 |TCP client|✓|✓|✓|✓|
-|SSL client|✗|✓(2)|✓(2)|✓|
+|SSL client|✗|✓(2)|✓|✓|
 |SSL client TLS 1.2|✗(5)|✗(5)|✗(5)|✓|
 |UDP (3)|✓|✓|✓|✗|
 |UDP backlog|✗|✗|✗|n/a| 
