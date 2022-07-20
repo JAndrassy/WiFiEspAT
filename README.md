@@ -220,7 +220,7 @@ This library implements Arduino WiFi networking API. The last version of this AP
 
 The AT firmware supports only one TCP server.
 
-* `begin` has optional parameters maxConnCount (default 1) and serverTimeout in seconds (default 60)
+* `begin` has optional parameters maxConnCount (default 3) and serverTimeout in seconds (default 60)
 * `beginSSL` ESP32 only. starts the server for secure connections. AT2 expects all client data of the SSL server to be read at once, so it only works with large WIFIESPAT_CLIENT_RX_BUFFER_SIZE or large buffer provided for read. see the WebServerSSL example 
 * `end` to stop the server (the Arduino WiFi libraries can't stop a server)
 * `accept` like in new [Ethernet library](https://www.arduino.cc/en/Reference/EthernetServerAccept). see the AdvancedChatServer  
