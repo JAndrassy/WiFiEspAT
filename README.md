@@ -218,7 +218,7 @@ This library implements Arduino WiFi networking API. The last version of this AP
 
 ### the WiFiServer class differences
 
-The AT firmware supports only one TCP server.
+The standard AT firmwares support only one TCP server. The ESP_ATMod firmware supports multiple servers.
 
 * `begin` has optional parameters maxConnCount (default 3) and serverTimeout in seconds (default 60)
 * `beginSSL` ESP32 only. starts the server for secure connections. AT2 expects all client data of the SSL server to be read at once, so it only works with large WIFIESPAT_CLIENT_RX_BUFFER_SIZE or large buffer provided for read. see the WebServerSSL example 
