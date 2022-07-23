@@ -94,7 +94,8 @@ public:
   int32_t RSSI();
 
   // enumerate WiFi access points
-  int8_t scanNetworks(WiFiApData* _apData = apDataInternal, uint8_t apDataSize = WIFIESPAT_INTERNAL_AP_LIST_SIZE); // using the default parameter will occupy a lot of SRAM
+  int8_t scanNetworks(); // using internal array will occupy a lot of SRAM
+  int8_t scanNetworks(WiFiApData* _apData, uint8_t apDataSize); // optional version
   const char* SSID(uint8_t index);
   uint8_t encryptionType(uint8_t index);
   uint8_t* BSSID(uint8_t index, uint8_t* bssid);
