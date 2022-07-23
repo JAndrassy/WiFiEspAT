@@ -78,10 +78,10 @@ The table focuses on limits of AT firmwares in passive receive mode.
 |Property|AT 1.7|AT 2 esp8266|AT 2 ESP32|JB AT 1.7 (1)|
 |---| :---: | :---: | :---: | :---: |
 |more than one TCP server|✗|✗|✗|✓|
-|SSL server|✗|✗|✓(4)|✗|
+|SSL server|✗|✗|✓(2)|✗|
 |TCP client|✓|✓|✓|✓|
 |SSL client|✗|✓(2)|✓|✓|
-|SSL client TLS 1.2|✗(5)|✗(5)|✗(5)|✓|
+|SSL client TLS 1.2|✗(4)|✗(4)|✗(4)|✓|
 |UDP (3)|✓|✓|✓|✗|
 |UDP backlog|✗|✗|✗|n/a| 
 |UDP multicast|✗|✓|✓|n/a| 
@@ -92,8 +92,7 @@ The table focuses on limits of AT firmwares in passive receive mode.
 * (1) [Jiri Bilek's firmware](https://github.com/JiriBilek/ESP_ATMod#description)
 * (2) larger size of available bytes is reported (unencrypted size)
 * (3) it is not possible to receive UDP message larger than the configured buffer
-* (4) SSL server expects all client data to be read at once, so it only works with large buffer
-* (5) it is possible to use the [SSLClient library](https://github.com/OPEnSLab-OSU/SSLClient) for TLS 1.2 on 32bit MCU
+* (4) it is possible to use the [SSLClient library](https://github.com/OPEnSLab-OSU/SSLClient) for TLS 1.2 on 32bit MCU
 
 ## AT firmware versions
 
@@ -221,7 +220,7 @@ This library implements Arduino WiFi networking API. The last version of this AP
 The standard AT firmwares support only one TCP server. The ESP_ATMod firmware supports multiple servers.
 
 * `begin` has optional parameters maxConnCount (default 3) and serverTimeout in seconds (default 60)
-* `beginSSL` ESP32 only. starts the server for secure connections. AT2 expects all client data of the SSL server to be read at once, so it only works with large WIFIESPAT_CLIENT_RX_BUFFER_SIZE or large buffer provided for read. see the WebServerSSL example 
+* `beginSSL` ESP32 only. starts the server for secure connections.
 * `end` to stop the server (the Arduino WiFi libraries can't stop a server)
 * `accept` like in new [Ethernet library](https://www.arduino.cc/en/Reference/EthernetServerAccept). see the AdvancedChatServer  
 

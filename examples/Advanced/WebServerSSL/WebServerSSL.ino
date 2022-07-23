@@ -64,34 +64,40 @@ void loop() {
     Serial.print("new client ");
     Serial.println(ip);
 
-    size_t size = client.available(); // for AT SSL server all at once arrive and must be read at once
-    char buff[size]; // size is around 400
-    size_t l = client.read((uint8_t*) buff, size);
-    if (l == 0) {
-      Serial.print("error reading request");
-    } else {
-      buff[l] = 0; // true count is always less then reported available count for SSL on AT2
-      Serial.print(buff);
+    while (client.connected()) {
+      if (client.available()) {
+        char line[128];
+        size_t l = client.readBytesUntil('\n', (uint8_t*) line, sizeof(line));
+        if (l == 0) {
+          Serial.print("error reading request");
+          break;
+        }
+        line[l - 1] = 0; // overwrite \r with a 0
+        Serial.println(line);
+        
+        if (strlen(line) == 0) { // http headers end with an empty line
+          // send a standard http response header
+          client.println("HTTP/1.1 200 OK");
+          client.println("Content-Type: text/html");
+          client.println("Connection: close");  // the connection will be closed after completion of the response
+          client.println("Refresh: 5");  // refresh the page automatically every 5 sec
+          client.println();
+          client.println("<!DOCTYPE HTML>");
+          client.println("<html>");
 
-      // send a standard http response header
-      client.println("HTTP/1.1 200 OK");
-      client.println("Content-Type: text/html");
-      client.println("Connection: close");  // the connection will be closed after completion of the response
-      client.println("Refresh: 5");  // refresh the page automatically every 5 sec
-      client.println();
-      client.println("<!DOCTYPE HTML>");
-      client.println("<html>");
-
-      // output the value of analog input pins
-      for (int analogChannel = 0; analogChannel < 4; analogChannel++) {
-        int sensorReading = analogRead(analogChannel);
-        client.print("analog input ");
-        client.print(analogChannel);
-        client.print(" is ");
-        client.print(sensorReading);
-        client.println("<br />");
+          // output the value of analog input pins
+          for (int analogChannel = 0; analogChannel < 4; analogChannel++) {
+            int sensorReading = analogRead(analogChannel);
+            client.print("analog input ");
+            client.print(analogChannel);
+            client.print(" is ");
+            client.print(sensorReading);
+            client.println("<br />");
+          }
+          client.println("</html>");
+          break;
+        }
       }
-      client.println("</html>");
     }
 
     // close the connection:
