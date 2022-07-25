@@ -219,7 +219,7 @@ This library implements Arduino WiFi networking API. The last version of this AP
 
 The standard AT firmwares support only one TCP server. The ESP_ATMod firmware supports multiple servers.
 
-* `begin` has optional parameters maxConnCount (default 3) and serverTimeout in seconds (default 60)
+* `begin` has optional parameters maxConnCount (default 1) and serverTimeout in seconds (default 60)
 * `beginSSL` ESP32 only. starts the server for secure connections.
 * `end` to stop the server (the Arduino WiFi libraries can't stop a server)
 * `accept` like in new [Ethernet library](https://www.arduino.cc/en/Reference/EthernetServerAccept). see the AdvancedChatServer  

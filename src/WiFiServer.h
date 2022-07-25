@@ -26,7 +26,7 @@ class WiFiServer {
 
 public:
   WiFiServer(uint16_t);
-  void begin(uint8_t maxConnCount = 3, uint16_t serverTimeout = 60);
+  void begin( uint8_t maxConnCount = 1, uint16_t serverTimeout = 60);
   void beginSSL(bool ca = false, uint8_t maxConnCount = 1, uint16_t serverTimeout = 60);
   void end();
   uint8_t status();
