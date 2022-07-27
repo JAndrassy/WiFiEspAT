@@ -78,11 +78,11 @@ The table focuses on limits of AT firmwares in passive receive mode.
 |Property|AT 1.7|AT 2 esp8266|AT 2 ESP32|JB AT 1.7 (1)|
 |---| :---: | :---: | :---: | :---: |
 |more than one TCP server|✗|✗|✗|✓|
-|SSL server|✗|✗|✓(2)|✗|
+|SSL server|✗|✗|✓|✗|
 |TCP client|✓|✓|✓|✓|
-|SSL client|✗|✓(2)|✓|✓|
-|SSL client TLS 1.2|✗(4)|✗(4)|✗(4)|✓|
-|UDP (3)|✓|✓|✓|✗|
+|SSL client|✗|✓(|✓|✓|
+|SSL client TLS 1.2|✗(3)|✗(3)|✗(3)|✓|
+|UDP (2)|✓|✓|✓|✗|
 |UDP backlog|✗|✗|✗|n/a| 
 |UDP multicast|✗|✓|✓|n/a| 
 |SoftAP|✓|✓|✓|✗|
@@ -90,9 +90,8 @@ The table focuses on limits of AT firmwares in passive receive mode.
 |epoch time|Lobo|✓|✓|✓|
 
 * (1) [Jiri Bilek's firmware](https://github.com/JiriBilek/ESP_ATMod#description)
-* (2) larger size of available bytes is reported (unencrypted size)
-* (3) it is not possible to receive UDP message larger than the configured buffer
-* (4) it is possible to use the [SSLClient library](https://github.com/OPEnSLab-OSU/SSLClient) for TLS 1.2 on 32bit MCU
+* (2) it is not possible to receive UDP message larger than the configured buffer
+* (3) it is possible to use the [SSLClient library](https://github.com/OPEnSLab-OSU/SSLClient) for TLS 1.2 on 32bit MCU
 
 ## AT firmware versions
 
