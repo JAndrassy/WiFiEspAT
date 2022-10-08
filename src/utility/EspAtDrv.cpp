@@ -383,8 +383,8 @@ bool EspAtDrvClass::joinAP(const char* ssid, const char* password, const uint8_t
  if (ssid) {
   cmd->print(F("=\""));
   cmd->print(ssid);
+  cmd->print((FSH_P) QOUT_COMMA_QOUT);
   if (password) {
-    cmd->print((FSH_P) QOUT_COMMA_QOUT);
     cmd->print(password);
     if (bssid) {
       cmd->print((FSH_P) QOUT_COMMA_QOUT);
