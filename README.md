@@ -79,12 +79,12 @@ The table focuses on limits of AT firmwares in passive receive mode.
 
 |Feature|AT 1.7|AT 2.4+|ESP_ATMod(1)|
 |---| :---: | :---: | :---: |
-|more than one TCP server|✗|✗|✓|
+|more than one TCP server|✗|✗|✓(2)|
 |SSL server|✗|✓|✗|
 |TCP client|✓|✓|✓|
 |SSL client|✗|✓|✓|
 |SSL client TLS 1.2|✗(3)|✓|✓|
-|UDP (2)|✓|✓|✗|
+|UDP (4)|✓|✓|✗|
 |UDP backlog|✗|✓|n/a| 
 |UDP multicast|✗|✓|n/a| 
 |SoftAP|✓|✓|✓|
@@ -92,8 +92,9 @@ The table focuses on limits of AT firmwares in passive receive mode.
 |epoch time|Lobo|✓|✓|
 
 * (1) [Jiri Bilek's firmware](https://github.com/JiriBilek/ESP_ATMod#description)
-* (2) it is not possible to receive UDP message larger than the configured buffer
+* (2) uncomment `#define WIFIESPAT_MULTISERVER` in src/utility/EspAtDrv.h
 * (3) it is possible to use the [SSLClient library](https://github.com/OPEnSLab-OSU/SSLClient) for TLS 1.2 on 32bit MCU
+* (4) it is not possible to receive UDP message larger than the configured buffer
 
 ## AT firmware versions
 
@@ -213,7 +214,7 @@ This library implements Arduino WiFi networking API. The last version of this AP
 
 ### the WiFiServer class differences
 
-The standard AT firmwares support only one TCP server. The ESP_ATMod firmware supports multiple servers.
+The standard AT firmwares support only one TCP server. The ESP_ATMod firmware supports multiple servers (uncomment `#define WIFIESPAT_MULTISERVER` in src/utility/EspAtDrv.h).
 
 * `begin` has optional parameters maxConnCount (default 1) and serverTimeout in seconds (default 60)
 * `beginSSL` ESP32 only. starts the server for secure connections.
