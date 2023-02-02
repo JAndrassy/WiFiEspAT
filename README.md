@@ -27,7 +27,7 @@ The library is for all Arduino MCU architectures.
 
 ## Getting started
 
-* Put AT firmware version 1.7 or 2.4 or higher into the ESP you want to use with the WiFiEspAT library. Make sure the firmware is working and returning OK to test command "AT".
+* Put AT firmware a supported version of the AT firmware into the ESP you want to use with the WiFiEspAT library. Make sure the firmware is working and returning OK to test command "AT".
 
 
 * Wire the ESP module to Serial1 of your Arduino. Wire RX to TX. If your Arduino doesn't have Serial1, wire the ESP module to pins 6 as RX and 7 as TX for SoftwareSerial.
