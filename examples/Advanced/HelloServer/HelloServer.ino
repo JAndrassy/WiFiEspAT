@@ -17,7 +17,7 @@
 
 #include <WiFiEspAT.h>
 #define USE_WIFI_NINA 0
-#include <WiFiWebServer.h>
+#include <WiFiWebServer.h> // library by Khoi Hoang available in Library Manager
 
 WiFiWebServer server(80);
 
