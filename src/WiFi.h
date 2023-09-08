@@ -84,8 +84,7 @@ public:
   IPAddress localIP();
   IPAddress gatewayIP();
   IPAddress subnetMask();
-  IPAddress dnsServer1();
-  IPAddress dnsServer2();
+  IPAddress dnsIP(int n = 0);
   bool dhcpIsEnabled();
 
   // WiFi network parameters

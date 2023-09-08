@@ -107,13 +107,13 @@ void printWifiStatus() {
   Serial.println(mask);
 
   Serial.print("DNS server: ");
-  IPAddress dns1 = WiFi.dnsServer1();
+  IPAddress dns1 = WiFi.dnsIP();
   if (dns1 == INADDR_NONE) {
     Serial.println("not set");
   } else {
     dns1.printTo(Serial);
     Serial.println();
-    IPAddress dns2 = WiFi.dnsServer2();
+    IPAddress dns2 = WiFi.dnsIP(1);
     if (dns2 != INADDR_NONE) {
       Serial.print("DNS server2: ");
       dns2.printTo(Serial);

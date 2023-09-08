@@ -148,18 +148,17 @@ IPAddress WiFiClass::subnetMask() {
   return mask;
 }
 
-IPAddress WiFiClass::dnsServer1() {
+IPAddress WiFiClass::dnsIP(int n) {
   IPAddress dns1;
   IPAddress dns2;
   EspAtDrv.staDnsQuery(dns1, dns2);
-  return dns1;
-}
-
-IPAddress WiFiClass::dnsServer2() {
-  IPAddress dns1;
-  IPAddress dns2;
-  EspAtDrv.staDnsQuery(dns1, dns2);
-  return dns2;
+  switch (n) {
+    case 0:
+      return dns1;
+    case 1:
+      return dns2;
+  }
+  return IPAddress(0, 0, 0, 0);
 }
 
 bool WiFiClass::dhcpIsEnabled() {
