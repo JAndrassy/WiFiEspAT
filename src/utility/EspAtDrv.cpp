@@ -718,11 +718,18 @@ bool EspAtDrvClass::serverBegin(uint16_t port, uint8_t maxConnCount, uint16_t se
   return sendCommand();
 }
 
-bool EspAtDrvClass::serverEnd() {
+bool EspAtDrvClass::serverEnd(uint16_t port) {
   maintain();
   LOG_INFO_PRINT_PREFIX();
   LOG_INFO_PRINTLN(F("stop server"));
+#ifdef WIFIESPAT_MULTISERVER
+  cmd->print(F("AT+CIPSERVER=0,"));
+  cmd->print(port);
+  if (!sendCommand())
+    return false;
+#else
   return simpleCommand(PSTR("AT+CIPSERVER=0"));
+#endif
 }
 
 uint8_t EspAtDrvClass::clientLinkId(uint16_t serverPort, bool accept) {
@@ -755,7 +762,7 @@ uint8_t EspAtDrvClass::clientLinkIds(uint16_t serverPort, uint8_t linkIds[]) {
   uint8_t l = 0;
   for (int linkId = 0; linkId < LINKS_COUNT; linkId++) {
     LinkInfo& link = linkInfo[linkId];
-    if (link.isConnected() && link.isIncoming() && !link.isClosing()) {
+    if (link.isConnected() && link.isIncoming() && !link.isClosing() && !link.isAccepted()) {
 #ifdef WIFIESPAT_MULTISERVER
       if (!link.localPort) {
         checkLinks();

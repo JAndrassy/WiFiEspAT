@@ -44,8 +44,16 @@ void WiFiServer::beginSSL(uint16_t _port, bool ca, uint8_t maxConnCount, uint16_
 }
 
 void WiFiServer::end() {
-  if (EspAtDrv.serverEnd()) {
-    state = CLOSED;
+  if (state != CLOSED) {
+    uint8_t linkIds[WIFIESPAT_LINKS_COUNT];
+    uint8_t l = EspAtDrv.clientLinkIds(port, linkIds);
+    for (uint8_t i = 0; i < l; i++) {
+      WiFiClient client(linkIds[i], port);
+      client.stop();
+    }
+    if (EspAtDrv.serverEnd(port)) {
+      state = CLOSED;
+    }
   }
 }
 

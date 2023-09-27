@@ -90,7 +90,7 @@ public:
   bool softApQuery(char* ssid, char* passphrase, uint8_t& channel, uint8_t& encoding, uint8_t& maxConnections, bool& hidden);
 
   bool serverBegin(uint16_t port, uint8_t maxConnCount = 1, uint16_t serverTimeout = 60, bool ssl = false, bool ca = false);
-  bool serverEnd();
+  bool serverEnd(uint16_t port);
   uint8_t clientLinkId(uint16_t serverPort, bool accept = false);
   uint8_t clientLinkIds(uint16_t serverPort, uint8_t linkIds[]);
 

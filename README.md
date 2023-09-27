@@ -218,7 +218,7 @@ The standard AT firmwares support only one TCP server. The ESP_ATMod firmware su
 * `begin` has optional parameters maxConnCount (default 1) and serverTimeout in seconds (default 60)
 * `beginSSL` ESP32 only. starts the server for secure connections.
 * `begin(port)` and `beginSSL(port)` and constructor without parameters
-* `end` to stop the server
+* `end` to stop the server and the clients managed by the server for available()
 * `accept` like in new [Ethernet library](https://www.arduino.cc/en/Reference/EthernetServerAccept). see the AdvancedChatServer  
 
 The WiFiServer class in this library doesn't derive from the Arduino Server class. It doesn't implement the never used 'send to all clients' functionality over Print class methods (print, write). For 'send to all clients' use the WiFiServerPrint class as the PagerServer example.
