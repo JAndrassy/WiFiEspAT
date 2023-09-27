@@ -29,8 +29,18 @@ void WiFiServer::begin(uint8_t maxConnCount, uint16_t serverTimeout) {
   state = EspAtDrv.serverBegin(port, maxConnCount, serverTimeout) ? LISTEN : CLOSED;
 }
 
+void WiFiServer::begin(uint16_t _port, uint8_t maxConnCount, uint16_t serverTimeout) {
+  port = _port;
+  begin(maxConnCount, serverTimeout);
+}
+
 void WiFiServer::beginSSL(bool ca, uint8_t maxConnCount, uint16_t serverTimeout) {
   state = EspAtDrv.serverBegin(port, maxConnCount, serverTimeout, true, ca) ? LISTEN : CLOSED;
+}
+
+void WiFiServer::beginSSL(uint16_t _port, bool ca, uint8_t maxConnCount, uint16_t serverTimeout) {
+  port = _port;
+  begin(ca, maxConnCount, serverTimeout);
 }
 
 void WiFiServer::end() {

@@ -25,9 +25,11 @@
 class WiFiServer {
 
 public:
-  WiFiServer(uint16_t);
+  WiFiServer(uint16_t port = 80);
   void begin( uint8_t maxConnCount = 1, uint16_t serverTimeout = 60);
+  void begin(uint16_t port, uint8_t maxConnCount = 1, uint16_t serverTimeout = 60);
   void beginSSL(bool ca = false, uint8_t maxConnCount = 1, uint16_t serverTimeout = 60);
+  void beginSSL(uint16_t port, bool ca = false, uint8_t maxConnCount = 1, uint16_t serverTimeout = 60);
   void end();
   uint8_t status();
   WiFiClient available(bool accept = false);
@@ -46,7 +48,7 @@ private:
 class WiFiServerPrint : public WiFiServer, public Print {
 
 public:
-  WiFiServerPrint(uint16_t port) : WiFiServer(port) {}
+  WiFiServerPrint(uint16_t port = 80) : WiFiServer(port) {}
 
   virtual size_t write(uint8_t);
   virtual size_t write(const uint8_t *buf, size_t size);
