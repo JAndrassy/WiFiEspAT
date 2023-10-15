@@ -26,10 +26,14 @@ class WiFiServer {
 
 public:
   WiFiServer(uint16_t port = 80);
-  void begin( uint8_t maxConnCount = 1, uint16_t serverTimeout = 60);
-  void begin(uint16_t port, uint8_t maxConnCount = 1, uint16_t serverTimeout = 60);
-  void beginSSL(bool ca = false, uint8_t maxConnCount = 1, uint16_t serverTimeout = 60);
-  void beginSSL(uint16_t port, bool ca = false, uint8_t maxConnCount = 1, uint16_t serverTimeout = 60);
+  void begin() { begin(1, 60); }
+  void begin(uint8_t maxConnCount, uint16_t serverTimeout);
+  void begin(uint16_t port) { begin(port, 1, 60); }
+  void begin(uint16_t port, uint8_t maxConnCount, uint16_t serverTimeout);
+  void beginSSL() { beginSSL(false, 1, 60); }
+  void beginSSL(bool ca, uint8_t maxConnCount, uint16_t serverTimeout);
+  void beginSSL(uint16_t port) { beginSSL(port, false, 1, 60); }
+  void beginSSL(uint16_t port, bool ca, uint8_t maxConnCount, uint16_t serverTimeout);
   void end();
   uint8_t status();
   WiFiClient available(bool accept = false);
