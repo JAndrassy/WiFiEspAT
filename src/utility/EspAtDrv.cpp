@@ -725,8 +725,7 @@ bool EspAtDrvClass::serverEnd(uint16_t port) {
 #ifdef WIFIESPAT_MULTISERVER
   cmd->print(F("AT+CIPSERVER=0,"));
   cmd->print(port);
-  if (!sendCommand())
-    return false;
+  return sendCommand();
 #else
   return simpleCommand(PSTR("AT+CIPSERVER=0"));
 #endif
