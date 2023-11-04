@@ -100,6 +100,10 @@ int WiFiClass::disconnect(bool persistent) {
 }
 
 bool WiFiClass::config(IPAddress local_ip, IPAddress dns_server, IPAddress gateway, IPAddress subnet) {
+	if (dns_server == INADDR_NONE) {
+		dns_server = local_ip;
+		dns_server[3] = 1;
+	}
   return EspAtDrv.staStaticIp(local_ip, gateway, subnet) && setDNS(dns_server);
 }
 
