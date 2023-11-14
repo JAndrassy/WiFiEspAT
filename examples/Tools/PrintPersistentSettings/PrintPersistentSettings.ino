@@ -143,18 +143,18 @@ void printApStatus() {
 
   Serial.print("AP encryption: ");
   switch (WiFi.apEncryptionType()) {
-    case ENC_TYPE_NONE:
+    case TWlEncType::NONE:
       Serial.println("open (no encryption)");
       break;
-    case ENC_TYPE_TKIP:
+    case TWlEncType::TKIP:
       Serial.println("WPA");
       break;
-    case ENC_TYPE_CCMP:
+    case TWlEncType::CCMP:
       Serial.println("WPA2");
       break;
   }
 
-  if (WiFi.apEncryptionType() != ENC_TYPE_NONE) {
+  if (WiFi.apEncryptionType() != TWlEncType::NONE) {
     char pass[65];
     WiFi.apPassphrase(pass);
     Serial.print("AP passphrase: ");

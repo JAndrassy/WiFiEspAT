@@ -78,15 +78,15 @@ void printApStatus() {
   Serial.print(WiFi.apMaxConnections());
   Serial.println(" stations.");
 
-  if (WiFi.apEncryptionType() == ENC_TYPE_NONE) {
+  if (WiFi.apEncryptionType() == TWlEncType::NONE) {
     Serial.println("AP is open (no encryption)");
   } else {
     Serial.print("Encryption of AP is ");
     switch (WiFi.apEncryptionType()) {
-      case ENC_TYPE_TKIP:
+      case TWlEncType::TKIP:
         Serial.println("WPA.");
         break;
-      case ENC_TYPE_CCMP:
+      case TWlEncType::CCMP:
         Serial.println("WPA2.");
         break;
     }

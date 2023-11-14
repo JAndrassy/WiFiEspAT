@@ -98,25 +98,25 @@ void listNetworks() {
   Serial.println();
 }
 
-void printEncryptionType(int thisType) {
+void printEncryptionType(TWlEncType thisType) {
   // read the encryption type and print out the name:
   switch (thisType) {
-    case ENC_TYPE_WEP:
+    case TWlEncType::WEP:
       Serial.print("WEP");
       break;
-    case ENC_TYPE_TKIP:
+    case TWlEncType::TKIP:
       Serial.print("WPA");
       break;
-    case ENC_TYPE_CCMP:
+    case TWlEncType::CCMP:
       Serial.print("WPA2");
       break;
-    case ENC_TYPE_NONE:
+    case TWlEncType::NONE:
       Serial.print("None");
       break;
-    case ENC_TYPE_AUTO:
+    case TWlEncType::AUTO:
       Serial.print("Auto");
       break;
-    case ENC_TYPE_UNKNOWN:
+    case TWlEncType::UNKNOWN:
     default:
       Serial.print("Unknown");
       break;

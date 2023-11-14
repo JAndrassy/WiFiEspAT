@@ -43,19 +43,18 @@ enum {
 };
 
 /* Encryption modes */
-enum wl_enc_type {  /* Values map to 802.11 Cipher Algorithm Identifier */
-  ENC_TYPE_WEP  = 5,
-  ENC_TYPE_TKIP = 2,
-  ENC_TYPE_WPA = ENC_TYPE_TKIP,
-  ENC_TYPE_CCMP = 4,
-  ENC_TYPE_WPA2 = ENC_TYPE_CCMP,
-  ENC_TYPE_GCMP = 6,
-  ENC_TYPE_WPA3 = ENC_TYPE_GCMP,
+enum class TWlEncType : uint8_t {  /* Values map to 802.11 Cipher Algorithm Identifier */
+  WEP  = 5u,
+  TKIP = 2u,
+  WPA = TKIP,
+  CCMP = 4u,
+  WPA2 = CCMP,
+  GCMP = 6u,
+  WPA3 = GCMP,
   /* ... except these two, 7 and 8 are reserved in 802.11-2007 */
-  ENC_TYPE_NONE = 7,
-  ENC_TYPE_AUTO = 8,
-
-  ENC_TYPE_UNKNOWN = 255
+  NONE = 7u,
+  AUTO = 8u,
+  UNKNOWN = 255u
 };
 
 class WiFiClass {
@@ -100,7 +99,7 @@ public:
   int8_t scanNetworks(); // using internal array will occupy a lot of SRAM
   int8_t scanNetworks(WiFiApData* _apData, uint8_t apDataSize); // optional version
   const char* SSID(uint8_t index);
-  uint8_t encryptionType(uint8_t index);
+  TWlEncType encryptionType(uint8_t index);
   uint8_t* BSSID(uint8_t index, uint8_t* bssid);
   uint8_t channel(uint8_t index);
   int32_t RSSI(uint8_t index);
@@ -120,7 +119,7 @@ public:
   // AP related functions:
 
   int beginAP(const char *ssid = nullptr, const char* passphrase = nullptr, uint8_t channel = 1,
-      uint8_t encryptionType = ENC_TYPE_CCMP, uint8_t maxConnections = 0, bool hidden = false);
+      TWlEncType encryptionType = TWlEncType::CCMP, uint8_t maxConnections = 0, bool hidden = false);
   bool endAP(bool persistent = false);
 
   bool configureAP(IPAddress ip, IPAddress gateway = INADDR_NONE, IPAddress subnet = INADDR_NONE);
@@ -128,7 +127,7 @@ public:
   uint8_t* apMacAddress(uint8_t* mac);
   const char* apSSID(char*);
   const char* apPassphrase(char*);
-  uint8_t apEncryptionType();
+  TWlEncType apEncryptionType();
   uint8_t apMaxConnections();
   bool apIsHidden();
   bool apDhcpIsEnabled();
@@ -146,7 +145,7 @@ public:
   bool reset(uint8_t resetPin = -1);
 
 private:
-  uint8_t mapAtEnc2ArduinoEnc(uint8_t encryptionType);
+  TWlEncType mapAtEnc2ArduinoEnc(uint8_t encryptionType);
 
   uint8_t state = WL_NO_MODULE;
 

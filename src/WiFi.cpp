@@ -214,9 +214,9 @@ const char* WiFiClass::SSID(uint8_t index) {
 
 }
 
-uint8_t WiFiClass::encryptionType(uint8_t index) {
+TWlEncType WiFiClass::encryptionType(uint8_t index) {
   if (index >= apDataLength)
-    return ENC_TYPE_UNKNOWN;
+    return TWlEncType::UNKNOWN;
   return mapAtEnc2ArduinoEnc(apData[index].enc);
 }
 
@@ -265,15 +265,15 @@ unsigned long WiFiClass::getTime() {
   return EspAtDrv.sntpTime();
 }
 
-int WiFiClass::beginAP(const char *ssid, const char* passphrase, uint8_t channel, uint8_t encryptionType, uint8_t maxConnetions, bool hidden) {
+int WiFiClass::beginAP(const char *ssid, const char* passphrase, uint8_t channel, TWlEncType encryptionType, uint8_t maxConnetions, bool hidden) {
   uint8_t encoding = 0; // OPEN
   switch (encryptionType) {
-    case ENC_TYPE_WEP: // WEP is not supported
+    case TWlEncType::WEP: // WEP is not supported
       return WL_AP_FAILED;
-    case ENC_TYPE_TKIP:
+    case TWlEncType::TKIP:
       encoding = 2; // WPA_PSK
     break;
-    case ENC_TYPE_CCMP:
+    case TWlEncType::CCMP:
       encoding = 4; // WPA_WPA2_PSK
     break;
   }
@@ -314,7 +314,7 @@ const char* WiFiClass::apPassphrase(char* buffer) {
   return buffer;
 }
 
-uint8_t WiFiClass::apEncryptionType() {
+TWlEncType WiFiClass::apEncryptionType() {
   if (apMaxConn == 0) {
     apSSID(nullptr);
   }
@@ -387,20 +387,28 @@ bool WiFiClass::reset(uint8_t resetPin) {
   return EspAtDrv.reset(resetPin);
 }
 
-uint8_t WiFiClass::mapAtEnc2ArduinoEnc(uint8_t encryptionType) {
-  if (encryptionType == 0) { // WIFI_AUTH_OPEN
-    encryptionType = ENC_TYPE_NONE;
-  } else if (encryptionType == 1) { // WIFI_AUTH_WEP
-    encryptionType = ENC_TYPE_WEP;
-  } else if (encryptionType == 2) { // WIFI_AUTH_WPA_PSK
-    encryptionType = ENC_TYPE_TKIP;
-  } else if (encryptionType == 3 || encryptionType == 4) { // WIFI_AUTH_WPA2_PSK || WIFI_AUTH_WPA_WPA2_PSK
-    encryptionType = ENC_TYPE_CCMP;
-  } else {
-    // unknown?
-    encryptionType = ENC_TYPE_UNKNOWN;
+TWlEncType WiFiClass::mapAtEnc2ArduinoEnc(uint8_t encryptionType) {
+  TWlEncType result;
+  switch(encryptionType)
+  {
+    case 0u: // WIFI_AUTH_OPEN
+      result = TWlEncType::NONE;
+      break;
+    case 1u: // WIFI_AUTH_WEP
+      result = TWlEncType::WEP;
+      break;
+    case 2u: // WIFI_AUTH_WPA_PSK
+      result = TWlEncType::TKIP;
+      break;
+    case 3u: // WIFI_AUTH_WPA2_PSK
+    case 4u: // WIFI_AUTH_WPA_WPA2_PSK
+      result = TWlEncType::CCMP;
+      break;
+    default:
+      result = TWlEncType::UNKNOWN;
+      break;
   }
-  return encryptionType;
+  return result;
 }
 
 WiFiClass WiFi;
