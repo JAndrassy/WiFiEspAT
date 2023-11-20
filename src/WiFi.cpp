@@ -366,6 +366,36 @@ IPAddress WiFiClass::apSubnetMask() {
   return mask;
 }
 
+bool WiFiClass::softAP(const char* ssid, const char* psk, int channel, int ssid_hidden, int max_connection) {
+  return beginAP(ssid, psk, channel, 0, max_connection, ssid_hidden);
+}
+
+bool WiFiClass::softAPConfig(IPAddress local_ip, IPAddress gateway, IPAddress subnet) {
+  return configureAP(local_ip, gateway, subnet);
+}
+
+bool WiFiClass::softAPdisconnect() {
+  return endAP(false);
+}
+
+IPAddress WiFiClass::softAPIP() {
+  return apIP();
+}
+
+uint8_t* WiFiClass::softAPmacAddress(uint8_t* mac) {
+  return apMacAddress(mac);
+}
+
+String WiFiClass::softAPSSID() {
+  char ssid[33];
+  return apSSID(ssid);
+}
+
+String WiFiClass::softAPPSK() {
+  char pass[64];
+  return apPassphrase(pass);
+}
+
 const char* WiFiClass::firmwareVersion(char* buffer) {
   EspAtDrv.firmwareVersion(buffer);
   return buffer;

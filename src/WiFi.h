@@ -33,6 +33,7 @@ enum {
   WL_NO_SHIELD = 255,
   WL_NO_MODULE = WL_NO_SHIELD,
   WL_IDLE_STATUS = 0,
+  WL_NO_SSID_AVAIL,
   WL_CONNECTED,
   WL_CONNECT_FAILED,
   WL_CONNECTION_LOST,
@@ -136,6 +137,15 @@ public:
   IPAddress apIP();
   IPAddress apGatewayIP();
   IPAddress apSubnetMask();
+
+  // esp8266 and esp32 compatible softAP functions
+  bool softAP(const char* ssid, const char* psk = NULL, int channel = 1, int ssid_hidden = 0, int max_connection = 4);
+  bool softAPConfig(IPAddress local_ip, IPAddress gateway, IPAddress subnet);
+  bool softAPdisconnect();
+  IPAddress softAPIP();
+  uint8_t* softAPmacAddress(uint8_t* mac);
+  String softAPSSID();
+  String softAPPSK();
 
   //
   const char* firmwareVersion(char* buffer = fwVersion);
