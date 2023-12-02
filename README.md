@@ -122,7 +122,7 @@ GitHub user loboris (Boris Lovosevic) builds customized versions of AT firmware 
 Jiri Bilek created [an alternative AT 1.7 firmware implementation](https://github.com/JiriBilek/ESP_ATMod) over esp8266 Arduino core and WiFi library. This supports SSL TLS1.2 connection in passive mode with this library. This firmware doesn't yet support UDP.
 
 Resources:
-* [the Espressif binaries](https://github.com/espressif/ESP8266_NONOS_SDK/releases) - versions 1.7.x in NONOS SDK 3.0.x
+* [the Espressif binaries](https://github.com/espressif/ESP8266_NONOS_SDK/tree/master/bin) - version 1.7.4 in NONOS SDK 3.0.4
 * [AT 1.7 reference](https://www.espressif.com/en/support/documents/technical-documents?keys=Non-OS+AT&field_type_tid%5B%5D=14) - it contains firmware flashing instructions too
 * [AT LoBo flashing instructions](https://github.com/loboris/ESP8266_AT_LoBo/#flashing). First install esptool.py. If you download the AT LoBo repository as zip, it contains the firmware binaries and a script to flash them.
 * [Jiri Bilek's ESP_ATMod](https://github.com/JiriBilek/ESP_ATMod)
