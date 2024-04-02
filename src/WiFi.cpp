@@ -188,6 +188,14 @@ uint8_t* WiFiClass::BSSID(uint8_t* bssid) {
   return bssid;
 }
 
+uint8_t WiFiClass::channel() {
+  uint8_t bssid[6] = {0};
+  uint8_t ch = 0;
+  int32_t rssi = 0;
+  EspAtDrv.apQuery(nullptr, bssid, ch, rssi);
+  return ch;
+}
+
 int32_t WiFiClass::RSSI() {
   uint8_t bssid[6] = {0};
   uint8_t ch = 0;
