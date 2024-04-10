@@ -92,8 +92,10 @@ bool EspAtDrvClass::reset(int8_t resetPin) {
     readRX(PSTR("ready")); // can be missed
   } else {
     cmd->print(F("AT+RST"));
-    sendCommand(PSTR("ready")); // can be missed
+    readRX(PSTR("ready")); // can be missed
   }
+  // wait for module startup
+  delay(250);
   if (!simpleCommand(PSTR("ATE0")) || // turn off echo. must work
       !simpleCommand(PSTR("AT+CIPMUX=1")) ||  // Enable multiple connections.
       !simpleCommand(PSTR("AT+CIPRECVMODE=1"))) // Set TCP Receive Mode - passive
