@@ -24,6 +24,11 @@
 /* Comment this out to disable prints and save space */
 #define BLYNK_PRINT Serial
 
+/* Fill in information from Blynk Device Info here */
+//#define BLYNK_TEMPLATE_ID           "TMPxxxxxx"
+//#define BLYNK_TEMPLATE_NAME         "Device"
+//#define BLYNK_AUTH_TOKEN            "YourAuthToken"
+
 #include <WiFiEspAT.h>
 #include <BlynkSimpleWifi.h>
 
@@ -35,10 +40,6 @@ SoftwareSerial Serial1(6, 7); // RX, TX
 #else
 #define AT_BAUD_RATE 115200
 #endif
-
-// You should get Auth Token in the Blynk App.
-// Go to the Project Settings (nut icon).
-char auth[] = "YourAuthToken";
 
 void setup() {
   Serial.begin(115200);
@@ -61,7 +62,7 @@ void setup() {
   }
   Serial.println("You're connected to the network");
 
-  Blynk.config(auth, BLYNK_DEFAULT_DOMAIN, BLYNK_DEFAULT_PORT);
+  Blynk.config(BLYNK_AUTH_TOKEN, BLYNK_DEFAULT_DOMAIN, BLYNK_DEFAULT_PORT);
   while(Blynk.connect() != true) {}
 }
 
