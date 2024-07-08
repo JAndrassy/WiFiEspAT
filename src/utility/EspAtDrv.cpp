@@ -213,7 +213,7 @@ uint8_t EspAtDrvClass::listAP(WiFiApData apData[], uint8_t size) {
     strcpy(r.ssid, tok);
     tok = strtok(NULL, delims); // <rssi>
     r.rssi = atoi(tok);
-    for (int i = 5; i >= 0; i--) {
+    for (int i = 0; i < 6; i++) {
       tok = strtok(NULL, delims); // <bssid>[i]
       r.bssid[i] = strtoul(tok, NULL, 16);
     }
@@ -304,7 +304,7 @@ bool EspAtDrvClass::staMacQuery(uint8_t* mac) {
     return false;
   const char* delims = ":\"";
   char* tok = strtok(buffer, delims); // +CIPSTAMAC:"
-  for (int i = 5; i >= 0; i--) {
+  for (int i = 0; i < 6; i++) {
     tok = strtok(NULL, delims); // <mac>[i]
     mac[i] = strtol(tok, NULL, 16);
   }
@@ -392,7 +392,7 @@ bool EspAtDrvClass::joinAP(const char* ssid, const char* password, const uint8_t
     cmd->print(password);
     if (bssid) {
       cmd->print((FSH_P) QOUT_COMMA_QOUT);
-      for (int i = 5; i >= 0; i--) {
+      for (int i = 0; i < 6; i++) {
         if (bssid[i] < 16) {
           cmd->print('0');
         }
@@ -526,7 +526,7 @@ bool EspAtDrvClass::apQuery(char* ssid, uint8_t* bssid, uint8_t& channel, int32_
   if (ssid != nullptr) {
     strcpy(ssid, tok);
   }
-  for (int i = 5; i >= 0; i--) {
+  for (int i = 0; i < 6; i++) {
     tok = strtok(NULL, delims); // <bssid>[i]
     bssid[i] = strtol(tok, NULL, 16);
   }
@@ -584,7 +584,7 @@ bool EspAtDrvClass::softApMacQuery(uint8_t* mac) {
     return false;
   const char* delims = ":\"";
   char* tok = strtok(buffer, delims); // +CIPAPMAC:"
-  for (int i = 5; i >= 0; i--) {
+  for (int i = 0; i < 6; i++) {
     tok = strtok(NULL, delims); // <mac>[i]
     mac[i] = strtol(tok, NULL, 16);
   }
