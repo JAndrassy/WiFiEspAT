@@ -29,6 +29,8 @@
 #include "WiFiUdp.h"
 #include "WiFiSSLClient.h"
 
+#define WIFIESPAT_LIB_VERSION 2
+
 enum {
   WL_NO_SHIELD = 255,
   WL_NO_MODULE = WL_NO_SHIELD,
