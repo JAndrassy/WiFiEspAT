@@ -58,7 +58,7 @@ void setup() {
   }
   Serial.println();
 
-  server.begin(3);
+  server.begin(3, 60);
 
   IPAddress ip = WiFi.localIP();
   Serial.println();

@@ -28,6 +28,7 @@ SoftwareSerial Serial1(6, 7); // RX, TX
 #endif
 
 #define MAX_CLIENTS WIFIESPAT_LINKS_COUNT
+const int CLIENT_CONN_TIMEOUT = 3600; // seconds. 1 hour
 
 WiFiServer server(2323);
 
@@ -56,7 +57,7 @@ void setup() {
   Serial.println();
 
   // start listening for clients
-  server.begin(MAX_CLIENTS);
+  server.begin(MAX_CLIENTS, CLIENT_CONN_TIMEOUT);
 
   Serial.print("Chat server address:");
   Serial.println(WiFi.localIP());
