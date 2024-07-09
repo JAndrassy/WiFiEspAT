@@ -59,7 +59,7 @@ private:
   bool assigned = false;
   uint8_t linkId = WIFIESPAT_NO_LINK;
   const char* udpHost = nullptr;
-  uint16_t port = 0;
+  uint16_t udpPort = 0;
 
   int8_t writeError = 0;
 

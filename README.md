@@ -223,8 +223,9 @@ The standard AT firmwares support only one TCP server. The ESP_ATMod firmware su
 * `begin(port)` and `beginSSL(port)` and constructor without parameters
 * `end` to stop the server and the clients managed by the server for available()
 * `accept` like in new [Ethernet library](https://www.arduino.cc/en/Reference/EthernetServerAccept). see the AdvancedChatServer  
+* <del>available</del> - WiFiEspAT version 2 doesn't implement server.available(). See the PagerServer example on how to use the NetApiHelpers library for a WiFiServer	 with `available()`
 
-The WiFiServer class in this library doesn't derive from the Arduino Server class. It doesn't implement the never used 'send to all clients' functionality over Print class methods (print, write). For 'send to all clients' use the WiFiServerPrint class as the PagerServer example.
+The WiFiServer class in this library doesn't derive from the Arduino Server class. It doesn't implement the never used 'send to all clients' functionality with Print class methods (print, write). For 'send to all clients' see the PagerServer example.
 
 ### the UDP differences
 

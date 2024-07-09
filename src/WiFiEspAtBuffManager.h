@@ -27,7 +27,7 @@ public:
 
   WiFiEspAtBuffManagerClass();
 
-  WiFiEspAtBuffStream* getBuffStream(uint8_t linkId, uint16_t serverPort, size_t rxBufferSize, size_t txBufferSize);
+  WiFiEspAtBuffStream* getBuffStream(uint8_t linkId, size_t rxBufferSize, size_t txBufferSize);
 
   void freeUnused();
 

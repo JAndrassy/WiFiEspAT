@@ -53,7 +53,7 @@ void setup() {
 void loop() {
 
   if (!telneClient) {  // client is not connected
-    telneClient = telnetServer.available(); // returns active or 'empty' client
+    telneClient = telnetServer.accept(); // returns active or 'empty' client
   }
 
   if (telneClient.connected()) {

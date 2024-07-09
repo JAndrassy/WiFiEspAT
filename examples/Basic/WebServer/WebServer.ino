@@ -58,7 +58,7 @@ void setup() {
 
 void loop() {
 
-  WiFiClient client = server.available();
+  WiFiClient client = server.accept();
   if (client) {
     IPAddress ip = client.remoteIP();
     Serial.print("new client ");

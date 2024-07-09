@@ -77,7 +77,7 @@ void configAP() {
 
   while (true) {
 
-    WiFiClient client = server.available();
+    WiFiClient client = server.accept();
     if (client && client.available()) { // if !available yet, we return to this client in next loop
       char line[64];
       int l = client.readBytesUntil('\n', line, sizeof(line));

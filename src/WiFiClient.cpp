@@ -24,8 +24,8 @@
 WiFiClient::WiFiClient() {
 }
 
-WiFiClient::WiFiClient(uint8_t linkId, uint16_t serverPort) {
-  stream = WiFiEspAtBuffManager.getBuffStream(linkId, serverPort, WIFIESPAT_CLIENT_RX_BUFFER_SIZE, WIFIESPAT_CLIENT_TX_BUFFER_SIZE);
+WiFiClient::WiFiClient(uint8_t linkId) {
+  stream = WiFiEspAtBuffManager.getBuffStream(linkId, WIFIESPAT_CLIENT_RX_BUFFER_SIZE, WIFIESPAT_CLIENT_TX_BUFFER_SIZE);
   if (!stream) {
     EspAtDrv.close(linkId);
   }
@@ -38,7 +38,7 @@ int WiFiClient::connect(bool ssl, const char* host, uint16_t port) {
   uint8_t linkId = EspAtDrv.connect(ssl ? "SSL" : "TCP", host, port);
   if (linkId == NO_LINK)
     return false;
-  stream = WiFiEspAtBuffManager.getBuffStream(linkId, 0, WIFIESPAT_CLIENT_RX_BUFFER_SIZE, WIFIESPAT_CLIENT_TX_BUFFER_SIZE);
+  stream = WiFiEspAtBuffManager.getBuffStream(linkId, WIFIESPAT_CLIENT_RX_BUFFER_SIZE, WIFIESPAT_CLIENT_TX_BUFFER_SIZE);
   if (!stream) {
     EspAtDrv.close(linkId);
     return false;

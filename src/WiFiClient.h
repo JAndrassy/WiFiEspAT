@@ -43,7 +43,7 @@ class WiFiServer;
 class WiFiClient : public Client {
 
   friend WiFiServer;
-  WiFiClient(uint8_t linkId, uint16_t serverPort);
+  WiFiClient(uint8_t linkId);
 
 public:
   WiFiClient();

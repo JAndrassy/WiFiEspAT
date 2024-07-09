@@ -44,30 +44,13 @@ public:
   void beginSSL(uint16_t port, bool ca, uint8_t maxConnCount, uint16_t serverTimeout);
   void end();
   uint8_t status();
-  WiFiClient available(bool accept = false);
-  WiFiClient accept() {return available(true);}
+  WiFiClient available() __attribute__((deprecated("Use accept().")));
+  WiFiClient accept();
   virtual operator bool();
-
-protected:
-  size_t writeToAllClients(const uint8_t *buf, size_t size);
-  void flushAllClients();
 
 private:
   uint16_t port;
   uint8_t state;
-};
-
-class WiFiServerPrint : public WiFiServer, public Print {
-
-public:
-  WiFiServerPrint(uint16_t port = 80) : WiFiServer(port) {}
-
-  virtual size_t write(uint8_t);
-  virtual size_t write(const uint8_t *buf, size_t size);
-  virtual void flush();
-
-  using Print::write;
-
 };
 
 #endif

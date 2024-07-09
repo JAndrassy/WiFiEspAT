@@ -5,11 +5,21 @@
  connected clients. Connect two or more telnet sessions
  to see how server.available() and server.print() works.
 
+ For version 2 of the WiFiEspAT library this example uses
+ ArduinoWiFiServer from the NetApiHelpers library
+ because the WiFiEspAT library doesn't directly support
+ server.available() and print-to-all-clients anymore.
+
  created in September 2020 for WiFiEspAT library
+ modified in July 2024 for version 2 of the WiFiEspAT
  by Juraj Andrassy https://github.com/jandrassy
 
 */
 #include <WiFiEspAT.h>
+#include <NetApiHelpers.h>
+
+#define SERVER_MAX_MONITORED_CLIENTS 3 // applied in ArduinoWiFiServer.h
+#include <ArduinoWiFiServer.h>
 
 // Emulate Serial1 on pins 6/7 if not present
 #if defined(ARDUINO_ARCH_AVR) && !defined(HAVE_HWSERIAL1)
@@ -20,10 +30,9 @@ SoftwareSerial Serial1(6, 7); // RX, TX
 #define AT_BAUD_RATE 115200
 #endif
 
-const int MAX_CLIENTS = 3;
 const int CLIENT_CONN_TIMEOUT = 3600; // seconds. 1 hour
 
-WiFiServerPrint server(2323);
+ArduinoWiFiServer server(2323);
 
 void setup() {
 
@@ -48,7 +57,7 @@ void setup() {
   }
   Serial.println();
 
-  server.begin(MAX_CLIENTS, CLIENT_CONN_TIMEOUT);
+  server.begin(SERVER_MAX_MONITORED_CLIENTS, CLIENT_CONN_TIMEOUT);
 
   IPAddress ip = WiFi.localIP();
   Serial.println();

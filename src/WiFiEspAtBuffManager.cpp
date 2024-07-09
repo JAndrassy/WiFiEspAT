@@ -26,7 +26,7 @@ WiFiEspAtBuffManagerClass::WiFiEspAtBuffManagerClass() {
   }
 }
 
-WiFiEspAtBuffStream* WiFiEspAtBuffManagerClass::getBuffStream(uint8_t linkId, uint16_t serverPort, size_t rxBufferSize, size_t txBufferSize) {
+WiFiEspAtBuffStream* WiFiEspAtBuffManagerClass::getBuffStream(uint8_t linkId, size_t rxBufferSize, size_t txBufferSize) {
 
   if (linkId == WIFIESPAT_NO_LINK)
     return nullptr;
@@ -39,37 +39,21 @@ WiFiEspAtBuffStream* WiFiEspAtBuffManagerClass::getBuffStream(uint8_t linkId, ui
       break;
     }
     if (pool[i]->linkId == linkId) {
-      if (serverPort && serverPort == pool[i]->port) {
-        LOG_INFO_PRINT_PREFIX();
-        LOG_INFO_PRINT(F("BuffManager returned buff.stream at "));
-        LOG_INFO_PRINT(i);
-        LOG_INFO_PRINT(F(" for server at port "));
-        LOG_INFO_PRINT(serverPort);
-        LOG_INFO_PRINT(F(" and client's linkId "));
-        LOG_INFO_PRINTLN(linkId);
-        return pool[i];
-      } else {
         pool[i]->free();
         LOG_WARN_PRINT_PREFIX();
         LOG_WARN_PRINT(F("BuffManager cleared linkId "));
         LOG_WARN_PRINT(linkId);
         LOG_WARN_PRINT(F(" at "));
         LOG_WARN_PRINTLN(i);
-      }
     }
     if (pool[i]->assigned)
       continue;
     if (pool[i]->rxBufferSize == rxBufferSize && pool[i]->txBufferSize == txBufferSize) {
       pool[i]->linkId = linkId;
-      pool[i]->port = serverPort;
       pool[i]->assigned = true;
       LOG_INFO_PRINT_PREFIX();
       LOG_INFO_PRINT(F("BuffManager returned buff.stream at "));
       LOG_INFO_PRINT(i);
-      if (serverPort) {
-        LOG_INFO_PRINT(F(" for server at port "));
-        LOG_INFO_PRINT(serverPort);
-      }
       LOG_INFO_PRINT(F(" for linkId "));
       LOG_INFO_PRINTLN(linkId);
       return pool[i];
@@ -90,16 +74,11 @@ WiFiEspAtBuffStream* WiFiEspAtBuffManagerClass::getBuffStream(uint8_t linkId, ui
   res->rxBufferSize = rxBufferSize;
   res->txBufferSize = txBufferSize;
   res->linkId = linkId;
-  res->port = serverPort;
   res->assigned = true;
   pool[freePos] = res;
   LOG_INFO_PRINT_PREFIX();
   LOG_INFO_PRINT(F("BuffManager new buff.stream at "));
   LOG_INFO_PRINT(freePos);
-  if (serverPort) {
-    LOG_INFO_PRINT(F(" for server at port "));
-    LOG_INFO_PRINT(serverPort);
-  }
   LOG_INFO_PRINT(F(" for linkId "));
   LOG_INFO_PRINT(linkId);
   LOG_INFO_PRINT(F(" rx "));

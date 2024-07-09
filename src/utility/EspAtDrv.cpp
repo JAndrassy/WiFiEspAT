@@ -869,12 +869,11 @@ bool EspAtDrvClass::serverEnd(uint16_t port) {
 #endif
 }
 
-uint8_t EspAtDrvClass::clientLinkId(uint16_t serverPort, bool accept) {
+uint8_t EspAtDrvClass::newClientLinkId(uint16_t serverPort) {
   maintain();
   for (int linkId = 0; linkId < LINKS_COUNT; linkId++) {
     LinkInfo& link = linkInfo[linkId];
-    if (link.isConnected() && link.isIncoming() && !link.isClosing() && !link.isAccepted()
-        && (link.available || accept)) {
+    if (link.isIncoming() && !link.isClosing()) {
 #ifdef WIFIESPAT_MULTISERVER
       if (!link.localPort) {
         checkLinks();
@@ -883,38 +882,13 @@ uint8_t EspAtDrvClass::clientLinkId(uint16_t serverPort, bool accept) {
         continue;
 #endif
       LOG_INFO_PRINT_PREFIX();
-      LOG_INFO_PRINT(F("incoming linkId "));
+      LOG_INFO_PRINT(F("accepted incoming linkId "));
       LOG_INFO_PRINTLN(linkId);
-      if (accept) {
-        link.flags |= LINK_IS_ACCEPTED;
-      }
+      link.flags &= ~LINK_IS_INCOMING;
       return linkId;
     }
   }
   return NO_LINK;
-}
-
-uint8_t EspAtDrvClass::clientLinkIds(uint16_t serverPort, uint8_t linkIds[]) {
-  maintain();
-  uint8_t l = 0;
-  for (int linkId = 0; linkId < LINKS_COUNT; linkId++) {
-    LinkInfo& link = linkInfo[linkId];
-    if (link.isConnected() && link.isIncoming() && !link.isClosing() && !link.isAccepted()) {
-#ifdef WIFIESPAT_MULTISERVER
-      if (!link.localPort) {
-        checkLinks();
-      }
-      if (serverPort != link.localPort)
-        continue;
-#endif
-      linkIds[l] = linkId;
-      l++;
-    }
-  }
-  LOG_INFO_PRINT_PREFIX();
-  LOG_INFO_PRINT(l);
-  LOG_INFO_PRINTLN(F(" link ids for server"));
-  return l;
 }
 
 uint8_t EspAtDrvClass::connect(const char* type, const char* host, uint16_t port,

@@ -49,7 +49,6 @@ struct LinkInfo {
   bool isConnected() { return flags & LINK_CONNECTED;}
   bool isClosing() { return flags & LINK_CLOSING;}
   bool isIncoming() { return flags & LINK_IS_INCOMING;}
-  bool isAccepted() { return flags & LINK_IS_ACCEPTED;}
   bool isUdpListener() { return flags & LINK_IS_UDP_LISTNER;}
 };
 
@@ -101,8 +100,7 @@ public:
 
   bool serverBegin(uint16_t port, uint8_t maxConnCount = 1, uint16_t serverTimeout = 60, bool ssl = false, bool ca = false);
   bool serverEnd(uint16_t port);
-  uint8_t clientLinkId(uint16_t serverPort, bool accept = false);
-  uint8_t clientLinkIds(uint16_t serverPort, uint8_t linkIds[]);
+  uint8_t newClientLinkId(uint16_t serverPort);
 
   uint8_t connect(const char* type, const char* host, uint16_t port, //
 #ifdef WIFIESPAT1

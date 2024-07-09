@@ -49,12 +49,6 @@ void WiFiServer::beginSSL(uint16_t _port, bool ca, uint8_t maxConnCount, uint16_
 
 void WiFiServer::end() {
   if (state != CLOSED) {
-    uint8_t linkIds[WIFIESPAT_LINKS_COUNT];
-    uint8_t l = EspAtDrv.clientLinkIds(port, linkIds);
-    for (uint8_t i = 0; i < l; i++) {
-      WiFiClient client(linkIds[i], port);
-      client.stop();
-    }
     if (EspAtDrv.serverEnd(port)) {
       state = CLOSED;
     }
@@ -65,47 +59,19 @@ uint8_t WiFiServer::status() {
   return state;
 }
 
-WiFiClient WiFiServer::available(bool accept) {
+WiFiClient WiFiServer::available() {
+  return accept();
+}
+
+WiFiClient WiFiServer::accept() {
   if (state != CLOSED) {
-    uint8_t linkId = EspAtDrv.clientLinkId(port, accept);
+    uint8_t linkId = EspAtDrv.newClientLinkId(port);
     if (linkId != NO_LINK)
-      return WiFiClient(linkId, port);
+      return WiFiClient(linkId);
   }
   return WiFiClient();
 }
 
 WiFiServer::operator bool() {
   return (state != CLOSED);
-}
-
-size_t WiFiServer::writeToAllClients(const uint8_t *buf, size_t size) {
-  size_t ret = 0;
-  uint8_t linkIds[WIFIESPAT_LINKS_COUNT];
-  uint8_t l = EspAtDrv.clientLinkIds(port, linkIds);
-  for (uint8_t i = 0; i < l; i++) {
-    WiFiClient client(linkIds[i], port);
-    ret = client.write(buf, size);
-  }
-  return ret;
-}
-
-void WiFiServer::flushAllClients() {
-  uint8_t linkIds[WIFIESPAT_LINKS_COUNT];
-  uint8_t l = EspAtDrv.clientLinkIds(port, linkIds);
-  for (uint8_t i = 0; i < l; i++) {
-    WiFiClient client(linkIds[i], port);
-    client.flush();
-  }
-}
-
-size_t WiFiServerPrint::write(uint8_t c) {
-  return write(&c,1);
-}
-
-size_t WiFiServerPrint::write(const uint8_t *buf, size_t size) {
-  return writeToAllClients(buf, size);
-}
-
-void WiFiServerPrint::flush() {
-  flushAllClients();
 }

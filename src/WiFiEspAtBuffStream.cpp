@@ -23,7 +23,7 @@
 
 void WiFiEspAtBuffStream::setUdpPort(const char* _udpHost, uint16_t _udpPort) {
   udpHost = _udpHost;
-  port = _udpPort;
+  udpPort = _udpPort;
 }
 
 bool WiFiEspAtBuffStream::connected() {
@@ -39,7 +39,7 @@ void WiFiEspAtBuffStream::free() {
   rxBufferLength = 0;
   rxBufferIndex = 0;
   txBufferLength = 0;
-  port = 0;
+  udpPort = 0;
 }
 
 void WiFiEspAtBuffStream::close(bool abort) {
@@ -67,7 +67,7 @@ size_t WiFiEspAtBuffStream::write(const uint8_t *data, size_t length) {
   if (length == 0)
     return 0;
   if (txBufferLength == 0 && length > txBufferSize) // if internal buffer is empty and provided buffer is large
-    return EspAtDrv.sendData(linkId, data, length, udpHost, port); // send it right away
+    return EspAtDrv.sendData(linkId, data, length, udpHost, udpPort); // send it right away
 
   size_t a = txBufferSize - txBufferLength; // available space in internal buffer
   for (size_t i = 0; i < a && i < length; i++) { // copy data to internal buffer
@@ -85,7 +85,7 @@ size_t WiFiEspAtBuffStream::write(const uint8_t *data, size_t length) {
 void WiFiEspAtBuffStream::flush() {
   if (txBufferLength == 0)
     return;
-  size_t res = EspAtDrv.sendData(linkId, txBuffer, txBufferLength, udpHost, port);
+  size_t res = EspAtDrv.sendData(linkId, txBuffer, txBufferLength, udpHost, udpPort);
   setWriteError(res != txBufferLength);
   txBufferLength = 0;
 }
@@ -96,12 +96,12 @@ int WiFiEspAtBuffStream::availableForWrite() {
 
 size_t WiFiEspAtBuffStream::write(Stream& file) {
   flush();
-  return EspAtDrv.sendData(linkId, file, udpHost, port);
+  return EspAtDrv.sendData(linkId, file, udpHost, udpPort);
 }
 
 size_t WiFiEspAtBuffStream::write(SendCallbackFnc callback) {
   flush();
-  return EspAtDrv.sendData(linkId, callback, udpHost, port);
+  return EspAtDrv.sendData(linkId, callback, udpHost, udpPort);
 }
 
 int WiFiEspAtBuffStream::available() {

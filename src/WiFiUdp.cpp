@@ -38,7 +38,7 @@ int WiFiUdpSender::beginPacket(const char *host, uint16_t port) {
   }
   if (linkId == NO_LINK)
     return false;
-  stream = WiFiEspAtBuffManager.getBuffStream(linkId, 0, 0, WIFIESPAT_UDP_TX_BUFFER_SIZE);
+  stream = WiFiEspAtBuffManager.getBuffStream(linkId, 0, WIFIESPAT_UDP_TX_BUFFER_SIZE);
   if (!stream) {
    if (!listening) {
     EspAtDrv.close(linkId);
