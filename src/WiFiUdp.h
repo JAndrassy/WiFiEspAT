@@ -1,7 +1,7 @@
 /*
   This file is part of the WiFiEspAT library for Arduino
   https://github.com/jandrassy/WiFiEspAT
-  Copyright 2019 Juraj Andrassy
+  Copyright 2019, 2024 Juraj Andrassy
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -25,18 +25,11 @@
 #include "WiFiEspAtBuffStream.h"
 #include "utility/EspAtDrvTypes.h"
 
-/*
- * The Arduino UDP API implementation is split into two classes.
- * For implementation of the Arduino UDP receiving API,
- * the WiFiUDP class requires an internal buffer.
- * The UDPSender class contains functions which don't require
- * the internal receive buffer.
- * For AT2 it should be 3 classes, but the third class WiFiEspAtUDP
- * would take 100 bytes more of flash as separate class so it is squashed
- * into UDPSender class and the name WiFiEspAtUDP is an alias.
- */
-
-class WiFiUdpSender : public UDP {
+class WiFiUDP : public UDP
+#ifdef WIFIESPAT1
+, protected EspAtDrvUdpDataCallback
+#endif
+{
 public:
 
   // Sending UDP packets
@@ -53,15 +46,9 @@ public:
 
   using Print::write;
 
-  virtual IPAddress remoteIP() {return IPAddress();}
-  virtual uint16_t remotePort() {return 0;}
-
-#ifdef WIFIESPAT1
-  // Listening for UDP packets - not implemented here
-  virtual uint8_t begin(uint16_t) {return 0;}
-
-#else
   virtual uint8_t begin(uint16_t port);
+
+#ifndef WIFIESPAT1 // AT2
   virtual uint8_t beginMulticast(IPAddress ip, uint16_t port);
 
   // WiFiEspAT AT2 special functions for receive
@@ -70,46 +57,6 @@ public:
 #endif
 
   virtual void stop();
-
-  virtual int parsePacket() {return 0;}
-
-  virtual int available() {return 0;}
-  virtual int read() {return -1;}
-  virtual int read(uint8_t* buffer, size_t len) { (void) buffer; (void) len; return 0;}
-  virtual int read(char* buffer, size_t len) { (void) buffer; (void) len; return 0;}
-  virtual int peek() { return -1;}
-
-protected:
-
-  WiFiEspAtBuffStream* stream = nullptr;
-
-  uint8_t linkId = WIFIESPAT_NO_LINK;
-  bool listening = false;
-
-private:
-
-  char strIP[16]; // to hold the string version of IP for beginPacket(ip, port);
-
-#ifndef WIFIESPAT1 //AT2
-  uint8_t begin(const char* ip, uint16_t port);
-#endif
-};
-
-#ifndef WIFIESPAT1 //AT2
-typedef WiFiUdpSender WiFiEspAtUDP;
-#endif
-
-class WiFiUDP : public WiFiUdpSender
-#ifdef WIFIESPAT1
-, protected EspAtDrvUdpDataCallback 
-#endif
-{
-public:
-
-
-#ifdef WIFIESPAT1
-  virtual uint8_t begin(uint16_t);
-#endif
 
   // Listening for UDP packets
   virtual int parsePacket();
@@ -133,13 +80,17 @@ protected:
 #endif
 
 private:
-  byte rxBuffer[WIFIESPAT_UDP_RX_BUFFER_SIZE];
-  size_t rxBufferIndex = 0;
-  size_t rxBufferLength = 0;
+  uint8_t linkId = WIFIESPAT_NO_LINK;
+  bool listening = false;
+  WiFiEspAtBuffStream* txStream = nullptr;
+  WiFiEspAtBuffStream* rxStream = nullptr;
+  char strIP[16]; // to hold the string version of IP for beginPacket(ip, port);
 
 #ifndef WIFIESPAT1 //AT2
   IPAddress senderIP;
   uint16_t senderPort;
+
+  uint8_t begin(const char* ip, uint16_t port);
 #endif
 };
 

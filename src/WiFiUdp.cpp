@@ -1,7 +1,7 @@
 /*
   This file is part of the WiFiEspAT library for Arduino
   https://github.com/jandrassy/WiFiEspAT
-  Copyright 2019 Juraj Andrassy
+  Copyright 2019, 2024 Juraj Andrassy
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -21,13 +21,13 @@
 #include "WiFiUdp.h"
 #include "WiFiEspAtBuffManager.h"
 
-int WiFiUdpSender::beginPacket(IPAddress ip, uint16_t port) {
+int WiFiUDP::beginPacket(IPAddress ip, uint16_t port) {
   EspAtDrv.ip2str(ip, strIP);
   return beginPacket(strIP, port);
 }
 
-int WiFiUdpSender::beginPacket(const char *host, uint16_t port) {
-  if (stream) {
+int WiFiUDP::beginPacket(const char *host, uint16_t port) {
+  if (txStream) {
     endPacket();
   }
   uint8_t linkId;
@@ -38,61 +38,70 @@ int WiFiUdpSender::beginPacket(const char *host, uint16_t port) {
   }
   if (linkId == NO_LINK)
     return false;
-  stream = WiFiEspAtBuffManager.getBuffStream(linkId, 0, WIFIESPAT_UDP_TX_BUFFER_SIZE);
-  if (!stream) {
+  txStream = WiFiEspAtBuffManager.getBuffStream(linkId, 0, WIFIESPAT_UDP_TX_BUFFER_SIZE);
+  if (!txStream) {
    if (!listening) {
     EspAtDrv.close(linkId);
    }
     return false;
   }
-  stream->setUdpPort(host, port);
+  txStream->setUdpPort(host, port);
   return true;
 }
 
-int WiFiUdpSender::endPacket() {
-  if (!stream)
+int WiFiUDP::endPacket() {
+  if (!txStream)
     return 0;
   flush();
   if (listening) {
-    stream->free();
+    txStream->free();
   } else {
-    stream->close();
+    txStream->close();
   }
-  stream = nullptr;
+  txStream = nullptr;
   return !getWriteError();
 }
 
-size_t WiFiUdpSender::write(uint8_t b) {
-  if (!stream)
+size_t WiFiUDP::write(uint8_t b) {
+  if (!txStream)
     return 0;
-  return stream->write(b);
+  return txStream->write(b);
 }
 
-size_t WiFiUdpSender::write(const uint8_t *data, size_t length) {
-  if (!stream)
+size_t WiFiUDP::write(const uint8_t *data, size_t length) {
+  if (!txStream)
     return 0;
-  return stream->write(data, length);
+  return txStream->write(data, length);
 }
 
-void WiFiUdpSender::flush() {
-  if (!stream)
+void WiFiUDP::flush() {
+  if (!txStream)
     return;
-  stream->flush();
+  txStream->flush();
 }
 
-int WiFiUdpSender::availableForWrite() {
-  if (!stream)
+int WiFiUDP::availableForWrite() {
+  if (!txStream)
     return 0;
-  return stream->availableForWrite();
+  return txStream->availableForWrite();
 }
 
-size_t WiFiUdpSender::write(SendCallbackFnc callback) {
-  if (!stream)
+size_t WiFiUDP::write(SendCallbackFnc callback) {
+  if (!txStream)
     return 0;
-  return stream->write(callback);
+  return txStream->write(callback);
 }
 
 #ifdef WIFIESPAT1
+uint8_t WiFiUDP::begin(uint16_t port) {
+  if (linkId != NO_LINK) {
+    stop();
+  }
+  linkId = EspAtDrv.connect("UDP", "0.0.0.0", port, this, port);
+  listening = (linkId != NO_LINK);
+  return listening;
+}
+
 IPAddress WiFiUDP::remoteIP() {
   IPAddress ip;
   uint16_t port = 0;
@@ -113,11 +122,9 @@ uint16_t WiFiUDP::remotePort() {
   return port;
 }
 
-#endif
+#else
 
-
-#ifndef WIFIESPAT1 // AT2 WiFiEspAtUDP functions
-uint8_t WiFiUdpSender::begin(const char* ip, uint16_t port) {
+uint8_t WiFiUDP::begin(const char* ip, uint16_t port) {
   if (linkId != NO_LINK) {
     stop();
   }
@@ -126,23 +133,23 @@ uint8_t WiFiUdpSender::begin(const char* ip, uint16_t port) {
   return listening;
 }
 
-uint8_t WiFiUdpSender::begin(uint16_t port) {
+uint8_t WiFiUDP::begin(uint16_t port) {
   return begin("0.0.0.0", port);
 }
 
-uint8_t WiFiUdpSender::beginMulticast(IPAddress ip, uint16_t port) {
+uint8_t WiFiUDP::beginMulticast(IPAddress ip, uint16_t port) {
   char s[16];
   EspAtDrv.ip2str(ip, s);
   return begin(s, port);
 }
 
-size_t WiFiUdpSender::availableForParse() {
+size_t WiFiUDP::availableForParse() {
   if (linkId == NO_LINK)
     return 0;
   return EspAtDrv.availData(linkId);
 }
 
-size_t WiFiUdpSender::parsePacket(uint8_t* buffer, size_t size, IPAddress& remoteIP, uint16_t& remotePort) {
+size_t WiFiUDP::parsePacket(uint8_t* buffer, size_t size, IPAddress& remoteIP, uint16_t& remotePort) {
   size_t len = availableForParse();
   if (!len)
     return 0;
@@ -153,83 +160,85 @@ size_t WiFiUdpSender::parsePacket(uint8_t* buffer, size_t size, IPAddress& remot
 }
 #endif
 
-void WiFiUdpSender::stop() {
-  if (linkId == NO_LINK)
-    return;
-  if (stream) {
+void WiFiUDP::stop() {
+  if (rxStream) {
+    rxStream->free();
+    rxStream = nullptr;
+  }
+  if (txStream) {
     endPacket();
   }
+  if (linkId == NO_LINK)
+    return;
   EspAtDrv.close(linkId);
   linkId = NO_LINK;
   listening = false;
 }
 
-#ifdef WIFIESPAT1
-uint8_t WiFiUDP::begin(uint16_t port) {
-  if (linkId != NO_LINK) {
-    stop();
-  }
-  linkId = EspAtDrv.connect("UDP", "0.0.0.0", port, this, port);
-  listening = (linkId != NO_LINK);
-  return listening;
-}
-#endif
-
 int WiFiUDP::parsePacket() {
   if (linkId == NO_LINK)
     return 0;
 #ifdef WIFIESPAT1
-  if (rxBufferLength > 0 && rxBufferIndex > 0) { // clear already read packet
-    rxBufferLength = 0;
-    rxBufferIndex = 0;
+  if (rxStream && rxStream->rxBufferIndex > 0) { // clear already read packet
+    rxStream->free();
+    rxStream = nullptr;
   }
   EspAtDrv.maintain();
 #else
-  rxBufferIndex = 0;
-  rxBufferLength = WiFiUdpSender::parsePacket(rxBuffer, sizeof(rxBuffer), senderIP, senderPort);
-#endif  
+  if (rxStream) {
+    rxStream->free();
+    rxStream = nullptr;
+  }
+  if (!availableForParse())
+    return 0;
+  rxStream = WiFiEspAtBuffManager.getBuffStream(NO_LINK, WIFIESPAT_UDP_RX_BUFFER_SIZE, 0);
+  if (!rxStream)
+    return 0;
+  rxStream->rxBufferLength = WiFiUDP::parsePacket(rxStream->rxBuffer, WIFIESPAT_UDP_RX_BUFFER_SIZE, senderIP, senderPort);
+#endif
   return available();
 }
 
 int WiFiUDP::available() {
-  return (rxBufferLength - rxBufferIndex);
+  if (!rxStream)
+    return 0;
+  return rxStream->available();
 }
 
 int WiFiUDP::read() {
   if (!available())
     return -1;
-  return rxBuffer[rxBufferIndex++];
+  return rxStream->read();
 }
 
 int WiFiUDP::read(uint8_t* data, size_t size) {
   if (size == 0 || !available())
     return 0;
-  size_t l = rxBufferLength - rxBufferIndex;
-  if (l > size) {
-    l = size;
-  }
-  memcpy(data, rxBuffer + rxBufferIndex, l);
-  rxBufferIndex += l;
-  return l;
+  return rxStream->read(data, size);
 }
 
 int WiFiUDP::peek() {
   if (!available())
     return -1;
-  return rxBuffer[rxBufferIndex];
+  return rxStream->peek();
 }
 
 #ifdef WIFIESPAT1
 uint8_t WiFiUDP::readRxData(Stream* serial, size_t len) {
   if (available() > 0) // to avoid overwrite of previous packet
     return BUSY;
-  if (len > sizeof(rxBuffer))
+  if (len > WIFIESPAT_UDP_RX_BUFFER_SIZE)
     return LARGE;
-  size_t l = serial->readBytes(rxBuffer, len);
-  if (l != len) // timeout
+  rxStream = WiFiEspAtBuffManager.getBuffStream(NO_LINK, WIFIESPAT_UDP_RX_BUFFER_SIZE, 0);
+  if (!rxStream)
+    return BUSY;
+  size_t l = serial->readBytes(rxStream->rxBuffer, len);
+  if (l != len) { // timeout
+    rxStream->free();
+    rxStream = nullptr;
     return TIMEOUT;
-  rxBufferLength = len;
-  rxBufferIndex = 0;
+  }
+  rxStream->rxBufferLength = len;
   return OK;
 }
 #endif

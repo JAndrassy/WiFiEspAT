@@ -28,7 +28,7 @@ unsigned int localPort = 2390;      // local port to listen on
 
 char reply[] = "acknowledged";       // a string to send back
 
-WiFiEspAtUDP udp;
+WiFiUDP udp;
 
 void setup() {
   //Initialize serial and wait for port to open:

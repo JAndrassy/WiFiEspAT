@@ -52,6 +52,7 @@ public:
 
 private:
   friend class WiFiEspAtBuffManagerClass;
+  friend class WiFiUDP;
 
   void fillRXbuffer();
   void setWriteError(int8_t err = -1) {writeError = err;}

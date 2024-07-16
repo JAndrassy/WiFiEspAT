@@ -18,7 +18,7 @@ SoftwareSerial Serial1(6, 7); // RX, TX
 #define AT_BAUD_RATE 115200
 #endif
 
-WiFiUdpSender Udp;
+WiFiUDP Udp;
 IPAddress reciverIP(192, 168, 1, 108);
 unsigned int receiverPort = 9876;
 

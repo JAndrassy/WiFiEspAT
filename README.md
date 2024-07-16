@@ -229,16 +229,14 @@ The WiFiServer class in this library doesn't derive from the Arduino Server clas
 
 ### the UDP differences
 
-The Arduino UDP API requires to start a listening port to send an UDP message. This library doesn't require udp.begin() before udp.beginPacket(). 
+The Arduino UDP API requires to start a listening port to send an UDP message. This library doesn't require udp.begin() before udp.beginPacket(). See the UdpSender.ino example.
 
 * `beginMulticast` works only with AT2
 * `availableForParse` for AT2 only. returns the size of the available message. see the WiFiEspAT2UDP example
 * `parsePacket(buffer, size, ip, port)` for AT2 only. to read the message into provided buffer. see the WiFiEspAT2UDP example 
 * `write(callback)` variant of write function for efficient sending with a callback function
 
-You can use WiFiUdpSender class if you only send messages. See the UdpSender.ino example.
-
-With AT2 You can use WiFiEspAtUDP class if you receive messages with the `parsePacket(buffer, size, ip, port)` function. WiFiEspAtUDP doesn't have internal buffer to receive the message with `parsePacket()` so it saves global memory. See the WiFiEspAT2UDP example. 
+With AT2 You can receive messages with the `parsePacket(buffer, size, ip, port)` function. This doesn't use internal buffer to receive the message with `parsePacket()` so it saves memory. See the WiFiEspAT2UDP example. 
 
 ## Logging
 
