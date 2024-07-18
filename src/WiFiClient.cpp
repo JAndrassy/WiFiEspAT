@@ -138,7 +138,7 @@ int WiFiClient::peek() {
 }
 
 WiFiClient::operator bool() {
-  return (stream != nullptr);
+  return !!stream;
 }
 
 uint8_t WiFiClient::connected() {

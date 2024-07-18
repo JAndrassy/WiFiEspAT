@@ -20,6 +20,7 @@
 #include <Arduino.h>
 #include "WiFiEspAtBuffStream.h"
 #include "utility/EspAtDrv.h"
+#include "utility/EspAtDrvLogging.h"
 
 void WiFiEspAtBuffStream::setUdpPort(const char* _udpHost, uint16_t _udpPort) {
   udpHost = _udpHost;
@@ -34,7 +35,13 @@ bool WiFiEspAtBuffStream::connected() {
 }
 
 void WiFiEspAtBuffStream::free() {
-  assigned = false;
+  if (!serialId)
+    return;
+  LOG_INFO_PRINT_PREFIX();
+  LOG_INFO_PRINT(F("free BuffStream "));
+  LOG_INFO_PRINTLN(serialId);
+  serialId = 0;
+  refCount = 0;
   linkId = NO_LINK;
   rxBufferLength = 0;
   rxBufferIndex = 0;

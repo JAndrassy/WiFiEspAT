@@ -22,7 +22,7 @@
 
 #include <Udp.h>
 #include "WiFiEspAtConfig.h"
-#include "WiFiEspAtBuffStream.h"
+#include "WiFiEspAtSharedBuffStreamPtr.h"
 #include "utility/EspAtDrvTypes.h"
 
 class WiFiUDP : public UDP
@@ -82,8 +82,8 @@ protected:
 private:
   uint8_t linkId = WIFIESPAT_NO_LINK;
   bool listening = false;
-  WiFiEspAtBuffStream* txStream = nullptr;
-  WiFiEspAtBuffStream* rxStream = nullptr;
+  WiFiEspAtSharedBuffStreamPtr txStream;
+  WiFiEspAtSharedBuffStreamPtr rxStream;
   char strIP[16]; // to hold the string version of IP for beginPacket(ip, port);
 
 #ifndef WIFIESPAT1 //AT2

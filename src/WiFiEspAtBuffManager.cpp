@@ -35,21 +35,15 @@ WiFiEspAtBuffStream* WiFiEspAtBuffManagerClass::getBuffStream(uint8_t linkId, si
       freePos = i;
       break;
     }
-    if (linkId != WIFIESPAT_NO_LINK && pool[i]->linkId == linkId) {
-        pool[i]->free();
-        LOG_WARN_PRINT_PREFIX();
-        LOG_WARN_PRINT(F("BuffManager cleared linkId "));
-        LOG_WARN_PRINT(linkId);
-        LOG_WARN_PRINT(F(" at "));
-        LOG_WARN_PRINTLN(i);
-    }
-    if (pool[i]->assigned)
+    if (pool[i]->serialId)
       continue;
     if (pool[i]->rxBufferSize == rxBufferSize && pool[i]->txBufferSize == txBufferSize) {
       pool[i]->linkId = linkId;
-      pool[i]->assigned = true;
+      pool[i]->serialId = nextSerialId();
       LOG_INFO_PRINT_PREFIX();
-      LOG_INFO_PRINT(F("BuffManager returned buff.stream at "));
+      LOG_INFO_PRINT(F("BuffManager returned buff.stream id "));
+      LOG_INFO_PRINT(serialId);
+      LOG_INFO_PRINT(F(" at index "));
       LOG_INFO_PRINT(i);
       if (linkId != WIFIESPAT_NO_LINK) {
         LOG_INFO_PRINT(F(" for linkId "));
@@ -74,10 +68,12 @@ WiFiEspAtBuffStream* WiFiEspAtBuffManagerClass::getBuffStream(uint8_t linkId, si
   res->rxBufferSize = rxBufferSize;
   res->txBufferSize = txBufferSize;
   res->linkId = linkId;
-  res->assigned = true;
+  res->serialId = nextSerialId();
   pool[freePos] = res;
   LOG_INFO_PRINT_PREFIX();
-  LOG_INFO_PRINT(F("BuffManager new buff.stream at "));
+  LOG_INFO_PRINT(F("BuffManager new buff.stream id "));
+  LOG_INFO_PRINT(serialId);
+  LOG_INFO_PRINT(F(" at index "));
   LOG_INFO_PRINT(freePos);
   if (linkId != WIFIESPAT_NO_LINK) {
     LOG_INFO_PRINT(F(" for linkId "));
@@ -119,5 +115,17 @@ void WiFiEspAtBuffManagerClass::freeUnused() {
   }
 }
 
+uint8_t WiFiEspAtBuffManagerClass::nextSerialId() {
+  while (true) {
+    serialId++;
+    int i = 0;
+    for (; i < WIFIESPAT_LINKS_COUNT; i++) {
+      if (pool[i] == nullptr || pool[i]->serialId == serialId)
+        break;
+    }
+    if (i == WIFIESPAT_LINKS_COUNT || pool[i] == nullptr)
+      return serialId;
+  }
+}
 
 WiFiEspAtBuffManagerClass WiFiEspAtBuffManager;

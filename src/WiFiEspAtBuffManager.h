@@ -34,7 +34,9 @@ public:
 private:
 
   WiFiEspAtBuffStream* pool[WIFIESPAT_LINKS_COUNT];
+  uint8_t serialId = 0;
 
+  uint8_t nextSerialId();
 };
 
 extern WiFiEspAtBuffManagerClass WiFiEspAtBuffManager;

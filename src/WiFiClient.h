@@ -21,7 +21,7 @@
 #define _WIFICLIENT_H_
 
 #include <Client.h>
-#include "WiFiEspAtBuffStream.h"
+#include "WiFiEspAtSharedBuffStreamPtr.h"
 #include "WiFiEspAtConfig.h"
 
 enum WiFiTcpState {
@@ -83,7 +83,7 @@ private:
   int connect(bool ssl, IPAddress ip, uint16_t port);
   int connect(bool ssl, const char *host, uint16_t port);
 
-  WiFiEspAtBuffStream* stream = nullptr;
+  WiFiEspAtSharedBuffStreamPtr stream;
 
 };
 
