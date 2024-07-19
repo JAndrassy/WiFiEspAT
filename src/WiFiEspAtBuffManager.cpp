@@ -19,6 +19,7 @@
 
 #include "WiFiEspAtBuffManager.h"
 #include "utility/EspAtDrvLogging.h"
+#include "utility/EspAtDrv.h"
 
 WiFiEspAtBuffManagerClass::WiFiEspAtBuffManagerClass() {
   for (int i = 0; i < WIFIESPAT_LINKS_COUNT; i++) {
@@ -47,7 +48,7 @@ WiFiEspAtBuffStream* WiFiEspAtBuffManagerClass::getBuffStream(uint8_t linkId, si
       LOG_INFO_PRINT(i);
       if (linkId != WIFIESPAT_NO_LINK) {
         LOG_INFO_PRINT(F(" for linkId "));
-        LOG_INFO_PRINT(linkId);
+        LOG_INFO_PRINT(linkId & INDEX_MASK);
       }
       LOG_INFO_PRINTLN();
       return pool[i];
@@ -77,7 +78,7 @@ WiFiEspAtBuffStream* WiFiEspAtBuffManagerClass::getBuffStream(uint8_t linkId, si
   LOG_INFO_PRINT(freePos);
   if (linkId != WIFIESPAT_NO_LINK) {
     LOG_INFO_PRINT(F(" for linkId "));
-    LOG_INFO_PRINT(linkId);
+    LOG_INFO_PRINT(linkId & INDEX_MASK);
   }
   LOG_INFO_PRINT(F(" rx "));
   LOG_INFO_PRINT(rxBufferSize);

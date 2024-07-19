@@ -1,7 +1,7 @@
 /*
   This file is part of the WiFiEspAT library for Arduino
   https://github.com/jandrassy/WiFiEspAT
-  Copyright 2019 Juraj Andrassy
+  Copyright 2019, 2024 Juraj Andrassy
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -33,9 +33,13 @@ const uint8_t LINK_IS_INCOMING = (1 << 2);
 const uint8_t LINK_IS_ACCEPTED = (1 << 3);
 const uint8_t LINK_IS_UDP_LISTNER = (1 << 4);
 
+const uint8_t INDEX_MASK = 0b111;
+const uint8_t SERIALID_MASK = ~INDEX_MASK;
+
 //#define WIFIESPAT_MULTISERVER
 
 struct LinkInfo {
+  uint8_t serialId = 0;
   uint8_t flags = 0;
   size_t available = 0;
 #ifdef WIFIESPAT_MULTISERVER
@@ -50,6 +54,10 @@ struct LinkInfo {
   bool isClosing() { return flags & LINK_CLOSING;}
   bool isIncoming() { return flags & LINK_IS_INCOMING;}
   bool isUdpListener() { return flags & LINK_IS_UDP_LISTNER;}
+
+  void incrementSerialId() {
+    serialId += (INDEX_MASK + 1);
+  }
 };
 
 class EspAtDrvClass {
@@ -149,6 +157,7 @@ private:
   unsigned long lastSyncMillis;
 
   uint8_t freeLinkId();
+  uint8_t checkLinkId(uint8_t linkId);
 
   bool readRX(PGM_P expected, bool bufferData = true, bool listItem = false);
   bool readOK();

@@ -57,6 +57,7 @@ private:
 
   void fillRXbuffer();
   void setWriteError(int8_t err = -1) {writeError = err;}
+  bool checkLink();
 
   uint8_t serialId = 0;
   uint8_t refCount = 0;

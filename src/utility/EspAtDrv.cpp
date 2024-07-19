@@ -1,7 +1,7 @@
 /*
   This file is part of the WiFiEspAT library for Arduino
   https://github.com/jandrassy/WiFiEspAT
-  Copyright 2019 Juraj Andrassy
+  Copyright 2019, 2024 Juraj Andrassy
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -883,9 +883,11 @@ uint8_t EspAtDrvClass::newClientLinkId(uint16_t serverPort) {
 #endif
       LOG_INFO_PRINT_PREFIX();
       LOG_INFO_PRINT(F("accepted incoming linkId "));
-      LOG_INFO_PRINTLN(linkId);
+      LOG_INFO_PRINT(linkId);
+      LOG_INFO_PRINT(F(" with serialId "));
+      LOG_INFO_PRINTLN(link.serialId);
       link.flags &= ~LINK_IS_INCOMING;
-      return linkId;
+      return linkId | link.serialId;
     }
   }
   return NO_LINK;
@@ -951,6 +953,40 @@ uint8_t EspAtDrvClass::connect(const char* type, const char* host, uint16_t port
     link.udpDataCallback = udpDataCallback;
 #endif    
   }
+  link.incrementSerialId();
+  LOG_DEBUG_PRINT_PREFIX();
+  LOG_DEBUG_PRINT(F(" serialId "));
+  LOG_DEBUG_PRINT(link.serialId);
+  LOG_DEBUG_PRINT(F(" for linkId "));
+  LOG_DEBUG_PRINTLN(linkId);
+  return linkId | link.serialId;
+}
+
+uint8_t EspAtDrvClass::checkLinkId(uint8_t id) {
+  if (id == NO_LINK) {
+    LOG_ERROR_PRINT_PREFIX();
+    LOG_ERROR_PRINTLN(F(" function invoked with NO_LINK"));
+    lastErrorCode = EspAtDrvError::LINK_NOT_ACTIVE;
+    return NO_LINK;
+  }
+  uint8_t linkId = id & INDEX_MASK;
+  if (!linkInfo[linkId].isConnected()) {
+    LOG_INFO_PRINT_PREFIX();
+    LOG_INFO_PRINT(F("linkId "));
+    LOG_INFO_PRINT(linkId);
+    LOG_INFO_PRINTLN(F(" is not connected"));
+    lastErrorCode = EspAtDrvError::LINK_NOT_ACTIVE;
+    return NO_LINK;
+  }
+  if (linkInfo[linkId].serialId != (id & SERIALID_MASK)) {
+    LOG_INFO_PRINT_PREFIX();
+    LOG_INFO_PRINT(F("old serialId "));
+    LOG_INFO_PRINT(id & SERIALID_MASK);
+    LOG_INFO_PRINT(F(" for linkId "));
+    LOG_INFO_PRINTLN(linkId);
+    lastErrorCode = EspAtDrvError::LINK_NOT_ACTIVE;
+    return NO_LINK;
+  }
   return linkId;
 }
 
@@ -959,7 +995,11 @@ bool EspAtDrvClass::close(uint8_t linkId, bool abort) {
 
   LOG_INFO_PRINT_PREFIX();
   LOG_INFO_PRINT(F("close link "));
-  LOG_INFO_PRINTLN(linkId);
+  LOG_INFO_PRINTLN(linkId & INDEX_MASK);
+
+  linkId = checkLinkId(linkId);
+  if (linkId == NO_LINK)
+    return false;
 
   LinkInfo& link = linkInfo[linkId];
   link.available = 0;
@@ -981,6 +1021,11 @@ bool EspAtDrvClass::close(uint8_t linkId, bool abort) {
 }
 
 uint16_t EspAtDrvClass::localPortQuery(uint8_t linkId) {
+
+  linkId = checkLinkId(linkId);
+  if (linkId == NO_LINK)
+    return 0;
+
 #ifdef WIFIESPAT_MULTISERVER
   if (linkInfo[linkId].localPort != 0)
     return linkInfo[linkId].localPort;
@@ -997,10 +1042,14 @@ bool EspAtDrvClass::remoteParamsQuery(uint8_t linkId, IPAddress& remoteIP, uint1
 
   LOG_INFO_PRINT_PREFIX();
   LOG_INFO_PRINT(F("status of link "));
-  LOG_INFO_PRINTLN(linkId);
+  LOG_INFO_PRINTLN(linkId & INDEX_MASK);
+
+  linkId = checkLinkId(linkId);
+  if (linkId == NO_LINK)
+    return false;
 
   LinkInfo& link = linkInfo[linkId];
-  if (link.isConnected()) {
+
     cmd->print((FSH_P) AT_CIPSTATUS);
     if (!sendCommand(STATUS))
       return false;
@@ -1024,7 +1073,7 @@ bool EspAtDrvClass::remoteParamsQuery(uint8_t linkId, IPAddress& remoteIP, uint1
         return true;
       }
     }
-  }
+
   LOG_WARN_PRINT_PREFIX();
   LOG_WARN_PRINTLN(F("link is not active"));
   link.flags = 0;
@@ -1034,15 +1083,25 @@ bool EspAtDrvClass::remoteParamsQuery(uint8_t linkId, IPAddress& remoteIP, uint1
 
 bool EspAtDrvClass::connected(uint8_t linkId) {
   maintain();
+
+  linkId = checkLinkId(linkId);
+  if (linkId == NO_LINK)
+    return false;
+
   LinkInfo& link = linkInfo[linkId];
   return link.isConnected() && !link.isClosing();
 }
 
 size_t EspAtDrvClass::availData(uint8_t linkId) {
   maintain();
+
+  linkId = checkLinkId(linkId);
+  if (linkId == NO_LINK)
+    return 0;
+
   LinkInfo& link = linkInfo[linkId];
 #ifndef ESPATDRV_ASSUME_FLOW_CONTROL
-  if (link.available == 0 && link.isConnected() && !link.isClosing()) {
+  if (link.available == 0 && !link.isClosing()) {
     syncLinkInfo();
   }
 #endif
@@ -1054,17 +1113,16 @@ size_t EspAtDrvClass::recvData(uint8_t linkId, uint8_t data[], size_t buffSize) 
 
   LOG_INFO_PRINT_PREFIX();
   LOG_INFO_PRINT(F("get data on link "));
-  LOG_INFO_PRINTLN(linkId);
+  LOG_INFO_PRINTLN(linkId & INDEX_MASK);
+
+  linkId = checkLinkId(linkId);
+  if (linkId == NO_LINK)
+    return 0;
 
   LinkInfo& link = linkInfo[linkId];
   if (link.available == 0) {
     LOG_WARN_PRINT_PREFIX();
-    if (!link.isConnected()) {
-      LOG_WARN_PRINTLN(F("link is not active"));
-      lastErrorCode = EspAtDrvError::LINK_NOT_ACTIVE;
-    } else {
-      LOG_WARN_PRINTLN(F("no data for link"));
-    }
+    LOG_WARN_PRINTLN(F("no data for link"));
     return 0;
   }
 
@@ -1125,7 +1183,11 @@ size_t EspAtDrvClass::recvDataWithInfo(uint8_t linkId, uint8_t data[], size_t bu
 
   LOG_INFO_PRINT_PREFIX();
   LOG_INFO_PRINT(F("get data and info on link "));
-  LOG_INFO_PRINTLN(linkId);
+  LOG_INFO_PRINTLN(linkId & INDEX_MASK);
+
+  linkId = checkLinkId(linkId);
+  if (linkId == NO_LINK)
+    return 0;
 
   LinkInfo& link = linkInfo[linkId];
   if (link.available == 0) {
@@ -1213,7 +1275,11 @@ size_t EspAtDrvClass::sendData(uint8_t linkId, const uint8_t data[], size_t len,
 
   LOG_INFO_PRINT_PREFIX();
   LOG_INFO_PRINT(F("send data on link "));
-  LOG_INFO_PRINTLN(linkId);
+  LOG_INFO_PRINTLN(linkId & INDEX_MASK);
+
+  linkId = checkLinkId(linkId);
+  if (linkId == NO_LINK)
+    return 0;
 
   if (!linkInfo[linkId].isConnected()) {
     LOG_ERROR_PRINT_PREFIX();
@@ -1261,7 +1327,11 @@ size_t EspAtDrvClass::sendData(uint8_t linkId, Stream& file, const char* udpHost
 
   LOG_INFO_PRINT_PREFIX();
   LOG_INFO_PRINT(F("send stream on link "));
-  LOG_INFO_PRINTLN(linkId);
+  LOG_INFO_PRINTLN(linkId & INDEX_MASK);
+
+  linkId = checkLinkId(linkId);
+  if (linkId == NO_LINK)
+    return 0;
 
   if (!linkInfo[linkId].isConnected()) {
     LOG_ERROR_PRINT_PREFIX();
@@ -1325,7 +1395,11 @@ size_t EspAtDrvClass::sendData(uint8_t linkId, SendCallbackFnc callback, const c
 
   LOG_INFO_PRINT_PREFIX();
   LOG_INFO_PRINT(F("send with callback on link "));
-  LOG_INFO_PRINTLN(linkId);
+  LOG_INFO_PRINTLN(linkId & INDEX_MASK);
+
+  linkId = checkLinkId(linkId);
+  if (linkId == NO_LINK)
+    return 0;
 
   if (!linkInfo[linkId].isConnected()) {
     LOG_ERROR_PRINT_PREFIX();
@@ -1642,7 +1716,7 @@ bool EspAtDrvClass::readRX(PGM_P expected, bool bufferData, bool listItem) {
           LOG_DEBUG_PRINTLN((FSH_P) PROCESSED);
 #ifdef WIFIESPAT1
         } else { // UDP listener
-          LOG_DEBUG_PRINT(F(":<DATA>"));
+          LOG_DEBUG_PRINTLN(F(":<DATA>"));
           uint8_t res = link.udpDataCallback->readRxData(serial, len);
           if (res == EspAtDrvUdpDataCallback::OK) {
             LOG_DEBUG_PRINTLN((FSH_P) PROCESSED);
@@ -1672,6 +1746,7 @@ bool EspAtDrvClass::readRX(PGM_P expected, bool bufferData, bool listItem) {
 #ifdef WIFIESPAT_MULTISERVER
         link.localPort = 0;
 #endif
+        link.incrementSerialId();
         LOG_DEBUG_PRINTLN((FSH_P) PROCESSED);
       } else {
         LOG_DEBUG_PRINTLN((FSH_P) IGNORED);
@@ -1871,6 +1946,7 @@ bool EspAtDrvClass::checkLinks() {
     if (ok[linkId]) {
       if (!link.isConnected() || link.isClosing()) { // missed incoming connection
         link.flags = LINK_CONNECTED | LINK_IS_INCOMING;
+        link.incrementSerialId();
       }
     } else { // not connected
       link.flags = 0;
