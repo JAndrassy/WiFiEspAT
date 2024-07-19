@@ -178,15 +178,17 @@ uint8_t WiFiUDP::begin(uint16_t port) {
 int WiFiUDP::parsePacket() {
   if (linkId == NO_LINK)
     return 0;
-  rxBufferLength = 0;
-  rxBufferIndex = 0;
 #ifdef WIFIESPAT1
+  if (rxBufferLength > 0 && rxBufferIndex > 0) { // clear already read packet
+    rxBufferLength = 0;
+    rxBufferIndex = 0;
+  }
   EspAtDrv.maintain();
-  return available();
 #else
+  rxBufferIndex = 0;
   rxBufferLength = WiFiUdpSender::parsePacket(rxBuffer, sizeof(rxBuffer), senderIP, senderPort);
-  return rxBufferLength;
 #endif  
+  return available();
 }
 
 int WiFiUDP::available() {
@@ -219,7 +221,7 @@ int WiFiUDP::peek() {
 
 #ifdef WIFIESPAT1
 uint8_t WiFiUDP::readRxData(Stream* serial, size_t len) {
-  if (rxBufferLength) // to avoid overwrite of previous packet
+  if (available() > 0) // to avoid overwrite of previous packet
     return BUSY;
   if (len > sizeof(rxBuffer))
     return LARGE;
