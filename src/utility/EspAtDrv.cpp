@@ -263,6 +263,30 @@ bool EspAtDrvClass::staStaticIp(const IPAddress& ip, const IPAddress& gw, const 
   return sendCommand();
 }
 
+bool EspAtDrvClass::staEnableDHCP() {
+  LOG_INFO_PRINT_PREFIX();
+  LOG_INFO_PRINT(F("enable DHCP "));
+  LOG_INFO_PRINTLN(persistent ? F("persistent") : F("current") );
+
+  uint8_t mode = wifiMode | WIFI_MODE_STA; // turn on STA, leave SoftAP as it is
+  if (!setWifiMode(mode, false))
+    return false; // can't enable dhcp without sta mode
+
+#ifdef WIFIESPAT1
+  // AT 1 AT+CWDHCP= parameters are strange. first parameter is 0 AP, 1 STA, 2 both. second is 0/1
+  if (persistent) {
+    simpleCommand(PSTR("AT+CIPDNS_DEF=0"));
+    return simpleCommand(PSTR("AT+CWDHCP_DEF=1,1")); // STA, enable
+  }
+  simpleCommand(PSTR("AT+CIPDNS_CUR=0"));
+  return simpleCommand(PSTR("AT+CWDHCP_CUR=1,1"));
+#else
+  // AT 2 AT+CWDHCP= first parameter is 0/1 and second parameter are bits for net. interfaces
+  simpleCommand(PSTR("AT+CIPDNS=0"));
+  return simpleCommand(PSTR("AT+CWDHCP=1,1")); // enable, STA
+#endif
+}
+
 bool EspAtDrvClass::setDNS(const IPAddress& dns1, const IPAddress& dns2) {
   maintain();
   
@@ -465,25 +489,14 @@ bool EspAtDrvClass::quitAP(bool save) {
     LOG_WARN_PRINTLN(F("STA is off"));
     return false;
   }
-#ifdef WIFIESPAT1
-  // AT 1 AT+CWDHCP= parameters are strange. first parameter is 0, 1, 2. second is 0/1
-  if (persistent || save) {
-    simpleCommand(PSTR("AT+CWAUTOCONN=0")); // don't reconnect on reset
-    simpleCommand(PSTR("AT+CIPDNS_DEF=0")); // clear static DNS servers
-    simpleCommand(PSTR("AT+CWDHCP=1,1")); // enable DHCP back in case static IP disabled it
-  } else {
-    simpleCommand(PSTR("AT+CIPDNS_CUR=0")); // clear static DNS servers
-    simpleCommand(PSTR("AT+CWDHCP_CUR=1,1")); // enable DHCP back in case static IP disabled it
-  }
-#else
-  // AT 2 AT+CWDHCP= first parameter is 0/1 and second parameter are bits for net. interfaces
+#ifndef WIFIESPAT1 // AT 2
   if (persistent != save && !sysStoreInternal(save))
      return false;
+#endif
   if (persistent || save) {
     simpleCommand(PSTR("AT+CWAUTOCONN=0")); // don't reconnect on reset. always stored
   }
-  simpleCommand(PSTR("AT+CIPDNS=0")); // clear static DNS servers
-  simpleCommand(PSTR("AT+CWDHCP=1,1")); // enable STA DHCP back in case static IP disabled it
+#ifndef WIFIESPAT1 // AT 2
   if (persistent != save && !sysStoreInternal(persistent)) {
     persistent = save;
   }

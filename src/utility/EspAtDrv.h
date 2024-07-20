@@ -80,6 +80,7 @@ public:
   bool dnsQuery(IPAddress& dns1, IPAddress& dns2);
 
   bool staStaticIp(const IPAddress& local_ip, const IPAddress& gateway, const IPAddress& subnet);
+  bool staEnableDHCP();
   bool staMacQuery(uint8_t* mac);
   bool staIpQuery(IPAddress& ip, IPAddress& gwip, IPAddress& mask);
 
