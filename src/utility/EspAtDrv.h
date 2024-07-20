@@ -87,7 +87,7 @@ public:
   bool joinEAP(const char* ssid, uint8_t method, const char* identity, const char* username, const char* password, uint8_t security);
   bool quitAP(bool save);
   bool staAutoConnect(bool autoConnect);
-  bool apQuery(char* ssid, uint8_t* bssid, uint8_t& channel, int32_t& rssi);
+  bool apQuery(char* ssid, uint8_t* bssid, uint8_t& channel, int8_t& rssi);
 
   bool softApIp(const IPAddress& local_ip, const IPAddress& gateway, const IPAddress& subnet);
   bool softApMacQuery(uint8_t* mac);

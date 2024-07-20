@@ -177,14 +177,14 @@ bool WiFiClass::dhcpIsEnabled() {
 const char* WiFiClass::SSID(char* ssid) {
   uint8_t bssid[6] = {0};
   uint8_t ch = 0;
-  int32_t rssi = 0;
+  int8_t rssi = 0;
   EspAtDrv.apQuery(ssid, bssid, ch, rssi);
   return ssid;
 }
 
 uint8_t* WiFiClass::BSSID(uint8_t* bssid) {
   uint8_t ch = 0;
-  int32_t rssi = 0;
+  int8_t rssi = 0;
   EspAtDrv.apQuery(nullptr, bssid, ch, rssi);
   return bssid;
 }
@@ -192,15 +192,15 @@ uint8_t* WiFiClass::BSSID(uint8_t* bssid) {
 uint8_t WiFiClass::channel() {
   uint8_t bssid[6] = {0};
   uint8_t ch = 0;
-  int32_t rssi = 0;
+  int8_t rssi = 0;
   EspAtDrv.apQuery(nullptr, bssid, ch, rssi);
   return ch;
 }
 
-int32_t WiFiClass::RSSI() {
+int8_t WiFiClass::RSSI() {
   uint8_t bssid[6] = {0};
   uint8_t ch = 0;
-  int32_t rssi = 0;
+  int8_t rssi = 0;
   EspAtDrv.apQuery(nullptr, bssid, ch, rssi);
   return rssi;
 }

@@ -98,7 +98,7 @@ public:
   const char* SSID(char* _ssid = ssid); // using the default parameter will take 33 bytes of SRAM
   uint8_t* BSSID(uint8_t* bssid);
   uint8_t channel();
-  int32_t RSSI();
+  int8_t RSSI();
 
   // enumerate WiFi access points
   int8_t scanNetworks(); // using internal array will occupy a lot of SRAM

@@ -501,7 +501,7 @@ bool EspAtDrvClass::staAutoConnect(bool autoConnect) {
   return sendCommand();
 }
 
-bool EspAtDrvClass::apQuery(char* ssid, uint8_t* bssid, uint8_t& channel, int32_t& rssi) {
+bool EspAtDrvClass::apQuery(char* ssid, uint8_t* bssid, uint8_t& channel, int8_t& rssi) {
   maintain();
 
   LOG_INFO_PRINT_PREFIX();
