@@ -1334,7 +1334,12 @@ bool EspAtDrvClass::resolve(const char* hostname, IPAddress& result) {
   cmd->print('"');
   if (!sendCommand(PSTR("+CIPDOMAIN")))
     return false;
+#ifdef WIFIESPAT1
   result.fromString(buffer + strlen("+CIPDOMAIN:"));
+#else
+  buffer[strlen(buffer) - 1] = 0; // delete last char '\"'
+  result.fromString(buffer + strlen("+CIPDOMAIN:\""));
+#endif
   return readOK();
 }
 
