@@ -1573,7 +1573,7 @@ bool EspAtDrvClass::readRX(PGM_P expected, bool bufferData, bool listItem) {
         LOG_DEBUG_PRINTLN(F(" ...UNLINK is OK"));
         return true;
       }
-      if (expected == nullptr) {
+      if (expected == nullptr || !strcmp_P("ready", expected)) {
         LOG_DEBUG_PRINTLN((FSH_P) IGNORED); // it is only a late response to timeout query '?'
       } else {
       LOG_DEBUG_PRINTLN(F(" ...error"));
