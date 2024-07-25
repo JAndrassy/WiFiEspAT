@@ -40,6 +40,7 @@ const char AT_CIPSTATUS[] PROGMEM = "AT+CIPSTATUS";
 const char CIPSTATUS[] PROGMEM = "+CIPSTATUS";
 const char CIPSTA[] PROGMEM = "+CIPSTA";
 const char CIPAP[] PROGMEM = "+CIPAP";
+const char CIPETH[] PROGMEM = "+CIPETH";
 const char QOUT_COMMA_QOUT[] PROGMEM = "\",\"";
 const char PROCESSED[] PROGMEM = " ...processed";
 const char IGNORED[] PROGMEM = " ...ignored";
@@ -169,7 +170,7 @@ int EspAtDrvClass::staStatus() {
   LOG_INFO_PRINT_PREFIX();
   LOG_INFO_PRINTLN(F("wifi status"));
 
-  if (wifiModeDef == 0) { // reset() was not executed successful
+  if (wifiModeDef == -1) { // reset() was not executed successful
     LOG_ERROR_PRINT_PREFIX();
     LOG_ERROR_PRINTLN(F("AT firmware was not initialized"));
     lastErrorCode = EspAtDrvError::NOT_INITIALIZED;
@@ -181,6 +182,12 @@ int EspAtDrvClass::staStatus() {
     return -1;
   uint8_t status = buffer[strlen("STATUS:")] - 48;
   return readOK() ? status : -1;
+}
+
+int EspAtDrvClass::ethStatus() {
+  maintain();
+
+  return ethConnected;
 }
 
 uint8_t EspAtDrvClass::listAP(WiFiApData apData[], uint8_t size) {
@@ -256,16 +263,13 @@ bool EspAtDrvClass::staStaticIp(const IPAddress& ip, const IPAddress& gw, const 
   return sendCommand();
 }
 
-bool EspAtDrvClass::staDNS(const IPAddress& dns1, const IPAddress& dns2) {
+bool EspAtDrvClass::setDNS(const IPAddress& dns1, const IPAddress& dns2) {
   maintain();
   
   LOG_INFO_PRINT_PREFIX();
   LOG_INFO_PRINT(F("set static DNS "));
   LOG_INFO_PRINTLN(persistent ? F("persistent") : F("current") );
 
-  uint8_t mode = wifiMode | WIFI_MODE_STA; // turn on STA, leave SoftAP as it is
-  if (!setWifiMode(mode, false))
-    return false;  // can't set dns without sta mode
 #ifdef WIFIESPAT1 // AT+CIPDNS doesn't work in AT 1
   if (persistent) {
     cmd->print(F("AT+CIPDNS_DEF="));
@@ -329,11 +333,11 @@ bool EspAtDrvClass::staIpQuery(IPAddress& ip, IPAddress& gwip, IPAddress& mask) 
   return readOK();
 }
 
-bool EspAtDrvClass::staDnsQuery(IPAddress& dns1, IPAddress& dns2) {
+bool EspAtDrvClass::dnsQuery(IPAddress& dns1, IPAddress& dns2) {
   maintain();
 
   LOG_INFO_PRINT_PREFIX();
-  LOG_INFO_PRINTLN(F("STA DNS query"));
+  LOG_INFO_PRINTLN(F("DNS query"));
 
 #ifdef WIFIESPAT1 // AT+CIPDNS? has different output in AT 2
   cmd->print(F("AT+CIPDNS_CUR?"));
@@ -456,12 +460,13 @@ bool EspAtDrvClass::quitAP(bool save) {
   LOG_INFO_PRINT(F("quit AP "));
   LOG_INFO_PRINTLN((persistent || save) ? F(" persistent") : F(" current") );
 
-  if (wifiMode == WIFI_MODE_SAP) { // STA is off
+  if (!(wifiMode & WIFI_MODE_STA)) { // STA is off
     LOG_WARN_PRINT_PREFIX();
     LOG_WARN_PRINTLN(F("STA is off"));
     return false;
   }
 #ifdef WIFIESPAT1
+  // AT 1 AT+CWDHCP= parameters are strange. first parameter is 0, 1, 2. second is 0/1
   if (persistent || save) {
     simpleCommand(PSTR("AT+CWAUTOCONN=0")); // don't reconnect on reset
     simpleCommand(PSTR("AT+CIPDNS_DEF=0")); // clear static DNS servers
@@ -471,13 +476,14 @@ bool EspAtDrvClass::quitAP(bool save) {
     simpleCommand(PSTR("AT+CWDHCP_CUR=1,1")); // enable DHCP back in case static IP disabled it
   }
 #else
+  // AT 2 AT+CWDHCP= first parameter is 0/1 and second parameter are bits for net. interfaces
   if (persistent != save && !sysStoreInternal(save))
      return false;
   if (persistent || save) {
     simpleCommand(PSTR("AT+CWAUTOCONN=0")); // don't reconnect on reset. always stored
   }
   simpleCommand(PSTR("AT+CIPDNS=0")); // clear static DNS servers
-  simpleCommand(PSTR("AT+CWDHCP=1,3")); // enable DHCP back in case static IP disabled it
+  simpleCommand(PSTR("AT+CWDHCP=1,1")); // enable STA DHCP back in case static IP disabled it
   if (persistent != save && !sysStoreInternal(persistent)) {
     persistent = save;
   }
@@ -505,7 +511,7 @@ bool EspAtDrvClass::apQuery(char* ssid, uint8_t* bssid, uint8_t& channel, int32_
     ssid[0] = 0;
   }
 
-  if (wifiMode == WIFI_MODE_SAP) { // STA is off
+  if (!(wifiMode & WIFI_MODE_STA)) { // STA is off
     LOG_ERROR_PRINT_PREFIX();
     LOG_ERROR_PRINTLN(F("STA is off"));
     return false;
@@ -663,7 +669,7 @@ bool EspAtDrvClass::softApQuery(char* ssid, char* passphrase, uint8_t& channel, 
   LOG_INFO_PRINT_PREFIX();
   LOG_INFO_PRINTLN(F("SoftAP query"));
 
-  if (wifiMode == WIFI_MODE_STA) { // SoftAP is off
+  if (!(wifiMode & WIFI_MODE_SAP)) { // SoftAP is off
     LOG_ERROR_PRINT_PREFIX();
     LOG_ERROR_PRINTLN(F("SoftAP is off"));
     return false;
@@ -691,6 +697,138 @@ bool EspAtDrvClass::softApQuery(char* ssid, char* passphrase, uint8_t& channel, 
   maxConnections = atol(tok);
   tok = strtok(NULL, delims); // <hidden>
   hidden = atol(tok);
+  return readOK();
+}
+
+bool EspAtDrvClass::ethSetMac(uint8_t* mac) {
+  maintain();
+
+  LOG_INFO_PRINT_PREFIX();
+  LOG_INFO_PRINT(F("set ETH MAC "));
+//  LOG_INFO_PRINT(ip);
+  LOG_INFO_PRINTLN(persistent ? F(" persistent") : F(" current") );
+
+#ifdef WIFIESPAT1
+  if (persistent) {
+#endif
+    cmd->print(F("AT+CIPETHMAC=\""));
+#ifdef WIFIESPAT1
+  } else {
+    cmd->print(F("AT+CIPETHMAC_CUR=\""));
+  }
+#endif
+  printMAC(cmd, mac);
+  cmd->print('"');
+  return sendCommand();
+}
+
+bool EspAtDrvClass::ethStaticIp(const IPAddress& ip, const IPAddress& gw, const IPAddress& nm) {
+  maintain();
+
+  LOG_INFO_PRINT_PREFIX();
+  LOG_INFO_PRINT(F("set ETH static IP "));
+  LOG_INFO_PRINT(ip);
+  LOG_INFO_PRINTLN(persistent ? F(" persistent") : F(" current") );
+
+#ifdef WIFIESPAT1
+  if (persistent) {
+#endif
+    cmd->print(F("AT+CIPETH=\""));
+#ifdef WIFIESPAT1
+  } else {
+    cmd->print(F("AT+CIPETH_CUR=\""));
+  }
+#endif
+  ip.printTo(*cmd);
+  if (gw[0]) {
+    cmd->print((FSH_P) QOUT_COMMA_QOUT);
+    gw.printTo(*cmd);
+    if (nm[0]) {
+      cmd->print((FSH_P) QOUT_COMMA_QOUT);
+      nm.printTo(*cmd);
+    }
+  }
+  cmd->print('"');
+  return sendCommand();
+}
+
+bool EspAtDrvClass::ethEnableDHCP() {
+  LOG_INFO_PRINT_PREFIX();
+  LOG_INFO_PRINT(F("enable Eth DHCP "));
+  LOG_INFO_PRINTLN(persistent ? F("persistent") : F("current") );
+#ifdef WIFIESPAT1
+  if (persistent) {
+    return simpleCommand(PSTR("AT+CWDHCP=3,1"));
+  }
+  return simpleCommand(PSTR("AT+CWDHCP_CUR=3,1"));
+#else
+  return simpleCommand(PSTR("AT+CWDHCP=1,4"));
+#endif
+}
+
+bool EspAtDrvClass::ethMacQuery(uint8_t* mac) {
+  maintain();
+
+  LOG_INFO_PRINT_PREFIX();
+  LOG_INFO_PRINTLN(F("ETH MAC query "));
+
+  cmd->print(F("AT+CIPETHMAC?"));
+  if (!sendCommand(PSTR("+CIPETHMAC")))
+    return false;
+  const char* delims = ":\"";
+  char* tok = strtok(buffer, delims); // +CIPETHMAC:"
+  for (int i = 0; i < 6; i++) {
+    tok = strtok(NULL, delims); // <mac>[i]
+    mac[i] = strtol(tok, NULL, 16);
+  }
+  return readOK();
+}
+
+bool EspAtDrvClass::ethIpQuery(IPAddress& ip, IPAddress& gwip, IPAddress& mask) {
+  maintain();
+
+  LOG_INFO_PRINT_PREFIX();
+  LOG_INFO_PRINTLN(F("ETH IP query"));
+
+  cmd->print(F("AT+CIPETH?"));
+  if (!sendCommand(CIPETH))
+    return false;
+  buffer[strlen(buffer) - 1] = 0; // delete last char '\"'
+  ip.fromString(buffer + strlen("+CIPETH:ip:\""));
+  if (!readRX(CIPETH))
+    return false;
+  buffer[strlen(buffer) - 1] = 0;
+  gwip.fromString(buffer + strlen("+CIPETH:gateway:\""));
+  if (!readRX(CIPETH))
+    return false;
+  buffer[strlen(buffer) - 1] = 0;
+  mask.fromString(buffer + strlen("+CIPETH:netmask:\""));
+  return readOK();
+}
+
+bool EspAtDrvClass::setEthHostname(const char* hostname) {
+  maintain();
+
+  LOG_INFO_PRINT_PREFIX();
+  LOG_INFO_PRINT(F("set eth hostname "));
+  LOG_INFO_PRINTLN(hostname);
+
+  cmd->print(F("AT+CEHOSTNAME=\""));
+  cmd->print(hostname);
+  cmd->print('"');
+  return sendCommand();
+}
+
+bool EspAtDrvClass::ethHostnameQuery(char* hostname) {
+  maintain();
+
+  LOG_INFO_PRINT_PREFIX();
+  LOG_INFO_PRINTLN(F("eth hostname query"));
+
+  cmd->print(F("AT+CEHOSTNAME?"));
+  if (!sendCommand(PSTR("+CEHOSTNAME")))
+    return false;
+  strcpy(hostname, buffer + strlen("+CEHOSTNAME:"));
   return readOK();
 }
 
@@ -1288,7 +1426,7 @@ bool EspAtDrvClass::hostnameQuery(char* hostname) {
   return readOK();
 }
 
-bool EspAtDrvClass::dhcpStateQuery(bool& staDHCP, bool& softApDHCP) {
+bool EspAtDrvClass::dhcpStateQuery(bool& staDHCP, bool& softApDHCP, bool& ethDHCP) {
   maintain();
 
   LOG_INFO_PRINT_PREFIX();
@@ -1304,7 +1442,8 @@ bool EspAtDrvClass::dhcpStateQuery(bool& staDHCP, bool& softApDHCP) {
 #else
   softApDHCP = state & 0b10;
   staDHCP = state & 0b01;
-#endif  
+#endif
+  ethDHCP = state & 0b100;
   return readOK();
 }
 
@@ -1404,6 +1543,11 @@ bool EspAtDrvClass::sleepMode(EspAtSleepMode mode) {
   return sendCommand();
 }
 
+bool EspAtDrvClass::wifiOff(bool save) {
+  maintain();
+  return setWifiMode(0, save);
+}
+
 bool EspAtDrvClass::deepSleep() {
   maintain();
 
@@ -1482,7 +1626,7 @@ bool EspAtDrvClass::readRX(PGM_P expected, bool bufferData, bool listItem) {
     } else {
       l += serial->readBytes(buffer + l, 1); // read second byte with stream's timeout
       if (l < 2)
-    	  continue;  // We haven't read requested 2 bytes, something went wrong
+        continue;  // We haven't read requested 2 bytes, something went wrong
       timeout = 0; // AT firmware responded
       if (buffer[0] == '\r' && buffer[1] == '\n') // empty line. skip it
         continue;
@@ -1600,6 +1744,9 @@ bool EspAtDrvClass::readRX(PGM_P expected, bool bufferData, bool listItem) {
     } else if (listItem && !strcmp_P(buffer, OK)) { // OK ends the listing of unknown items count
       LOG_DEBUG_PRINTLN(F(" ...end of list"));
       return false;
+    } else if (!strncmp_P(buffer, PSTR("+ETH"), strlen("+ETH"))) {
+      ethConnected = (buffer[strlen("+ETH_")] != 'D'); // +ETH_DISCONNECTED
+      LOG_DEBUG_PRINTLN((FSH_P) PROCESSED);
     } else {
       ignoredCount++;
       if (ignoredCount > 70) { // reset() has many ignored lines
@@ -1634,15 +1781,11 @@ bool EspAtDrvClass::simpleCommand(PGM_P command) {
 
 bool EspAtDrvClass::setWifiMode(uint8_t mode, bool save) {
 
-  if (wifiModeDef == 0) { // reset() was not executed successful
+  if (wifiModeDef == -1) { // reset() was not executed successful
     LOG_ERROR_PRINT_PREFIX();
     LOG_ERROR_PRINTLN(F("AT firmware was not initialized"));
     lastErrorCode = EspAtDrvError::NOT_INITIALIZED;
     return false;
-  }
-
-  if (mode == 0) {
-    mode = WIFI_MODE_STA;
   }
 
   if (mode == wifiMode && (!save || mode == wifiModeDef)) // no change
@@ -1762,5 +1905,17 @@ bool EspAtDrvClass::checkLinks() {
   return true;
 }
 #endif
+
+void EspAtDrvClass::printMAC(Print* out, uint8_t* mac) {
+  for (int i = 0; i < 6; i++) {
+    if (i > 0) {
+      out->print(":");
+    }
+    if (mac[i] < 16) {
+      out->print("0");
+    }
+    out->print(mac[i], HEX);
+  }
+}
 
 EspAtDrvClass EspAtDrv;

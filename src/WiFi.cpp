@@ -100,15 +100,15 @@ int WiFiClass::disconnect(bool persistent) {
 }
 
 bool WiFiClass::config(IPAddress local_ip, IPAddress dns_server, IPAddress gateway, IPAddress subnet) {
-	if (dns_server == INADDR_NONE) {
-		dns_server = local_ip;
-		dns_server[3] = 1;
-	}
+  if (dns_server == INADDR_NONE) {
+    dns_server = local_ip;
+    dns_server[3] = 1;
+  }
   return EspAtDrv.staStaticIp(local_ip, gateway, subnet) && setDNS(dns_server);
 }
 
 bool WiFiClass::setDNS(IPAddress dns_server1, IPAddress dns_server2) {
-  return EspAtDrv.staDNS(dns_server1, dns_server2);
+  return EspAtDrv.setDNS(dns_server1, dns_server2);
 }
 
 bool WiFiClass::setHostname(const char* name) {
@@ -155,7 +155,7 @@ IPAddress WiFiClass::subnetMask() {
 IPAddress WiFiClass::dnsIP(int n) {
   IPAddress dns1;
   IPAddress dns2;
-  EspAtDrv.staDnsQuery(dns1, dns2);
+  EspAtDrv.dnsQuery(dns1, dns2);
   switch (n) {
     case 0:
       return dns1;
@@ -168,7 +168,8 @@ IPAddress WiFiClass::dnsIP(int n) {
 bool WiFiClass::dhcpIsEnabled() {
   bool sta;
   bool ap;
-  if (!EspAtDrv.dhcpStateQuery(sta, ap))
+  bool eth;
+  if (!EspAtDrv.dhcpStateQuery(sta, ap, eth))
     return false;
   return sta;
 }
@@ -346,7 +347,8 @@ bool WiFiClass::apIsHidden() {
 bool WiFiClass::apDhcpIsEnabled() {
   bool sta;
   bool ap;
-  EspAtDrv.dhcpStateQuery(sta, ap);
+  bool eth;
+  EspAtDrv.dhcpStateQuery(sta, ap, eth);
   return ap;
 }
 

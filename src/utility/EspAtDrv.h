@@ -65,14 +65,16 @@ public:
   bool sysPersistent(bool persistent);
 
   int staStatus();
+  int ethStatus();
 
   uint8_t listAP(WiFiApData apData[], uint8_t size); // returns count of filled records
 
+  bool setDNS(const IPAddress& dns1, const IPAddress& dns2);
+  bool dnsQuery(IPAddress& dns1, IPAddress& dns2);
+
   bool staStaticIp(const IPAddress& local_ip, const IPAddress& gateway, const IPAddress& subnet);
-  bool staDNS(const IPAddress& dns1, const IPAddress& dns2);
   bool staMacQuery(uint8_t* mac);
   bool staIpQuery(IPAddress& ip, IPAddress& gwip, IPAddress& mask);
-  bool staDnsQuery(IPAddress& dns1, IPAddress& dns2);
 
   bool joinAP(const char* ssid, const char* password, const uint8_t* bssid);
   bool joinEAP(const char* ssid, uint8_t method, const char* identity, const char* username, const char* password, uint8_t security);
@@ -88,6 +90,14 @@ public:
       uint8_t encoding = 4, uint8_t maxConnections = 0, bool hidden = false);
   bool endSoftAP(bool persistent = false);
   bool softApQuery(char* ssid, char* passphrase, uint8_t& channel, uint8_t& encoding, uint8_t& maxConnections, bool& hidden);
+
+  bool ethSetMac(uint8_t* mac);
+  bool ethStaticIp(const IPAddress& local_ip, const IPAddress& gateway, const IPAddress& subnet);
+  bool ethEnableDHCP();
+  bool ethMacQuery(uint8_t* mac);
+  bool ethIpQuery(IPAddress& ip, IPAddress& gwip, IPAddress& mask);
+  bool setEthHostname(const char* hostname);
+  bool ethHostnameQuery(char* hostname);
 
   bool serverBegin(uint16_t port, uint8_t maxConnCount = 1, uint16_t serverTimeout = 60, bool ssl = false, bool ca = false);
   bool serverEnd(uint16_t port);
@@ -115,13 +125,14 @@ public:
 
   bool setHostname(const char* hostname);
   bool hostnameQuery(char* hostname);
-  bool dhcpStateQuery(bool& staDHCP, bool& softApDHCP); // they have nothing in common, but use the same command
+  bool dhcpStateQuery(bool& staDHCP, bool& softApDHCP, bool& ethDHCP);
   bool mDNS(const char* hostname, const char* serverName, uint16_t serverPort);
   bool resolve(const char* hostname, IPAddress& result);
   bool sntpCfg(const char* server1, const char* server2);
   unsigned long sntpTime();
   bool ping(const char* hostname);
 
+  bool wifiOff(bool save = false);
   bool sleepMode(EspAtSleepMode mode);
   bool deepSleep();
 
@@ -133,7 +144,8 @@ private:
   char buffer[64];
   bool persistent = false;
   uint8_t wifiMode = 0;
-  uint8_t wifiModeDef = 0;
+  int8_t wifiModeDef = -1;
+  bool ethConnected = false;
   LinkInfo linkInfo[LINKS_COUNT];
   EspAtDrvError lastErrorCode = EspAtDrvError::NOT_INITIALIZED;
   unsigned long lastSyncMillis;
@@ -151,6 +163,8 @@ private:
   bool checkLinks();
 
   bool sysStoreInternal(bool store); // AT 2
+
+  void printMAC(Print* out, uint8_t* mac);
 };
 
 extern EspAtDrvClass EspAtDrv;
