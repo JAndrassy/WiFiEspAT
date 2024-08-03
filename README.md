@@ -5,6 +5,8 @@ This library creates standard Arduino WiFi networking API over ESP8266 or ESP32 
 
 This library is fast and reliable. It can communicate with AT firmware at high baud rates without flow control, limited only by reliability of UART at chosen speed.
 
+WiFiEspAT supports wired Ethernet with esp8266 or esp32 with an Ethernet module, AT firmware with Ethernet support and the [EthernetEspAT](https://github.com/Networking-for-Arduino/EthernetEspAT) library.
+
 The library is for all Arduino MCU architectures.
 
 ![MKR Zero with esp-01S](mkrzero-esp-01s.jpg)
@@ -26,7 +28,7 @@ The library is for all Arduino MCU architectures.
 
 ## Getting started
 
-* Put AT firmware a supported version of the AT firmware into the ESP you want to use with the WiFiEspAT library. Make sure the firmware is working and returning OK to test command "AT".
+* Put a supported version of the AT firmware into the ESP you want to use with the WiFiEspAT library. Make sure the firmware is working and returning OK to test command "AT".
 
 
 * Wire the ESP module to Serial1 of your Arduino. Wire RX to TX. If your Arduino doesn't have Serial1, wire the ESP module to pins 6 as RX and 7 as TX for SoftwareSerial.
@@ -49,7 +51,7 @@ The library is for all Arduino MCU architectures.
 
 ## Why a new WiFiEsp library?
 
-This library uses the new passive receive mode implemented in AT firmware 1.7 (Non OS SDK 3) and AT firmware 2.4+ (RTOS SDK). The [older WiFiEsp library](https://github.com/bportaluri/WiFiEsp) can't do much with larger data received. Without the passive receive mode, the AT firmware sends all the data at once and the serial RX buffer overflows. It is hard to receive more data over network with AT firmware without UART hardware flow control and Arduino AVR boards don't have flow control and simple esp8266 modules don't have the flow control pins exposed.
+This library uses the passive receive mode implemented in AT firmware 1.7 (Non OS SDK 3) and AT firmware 2.4+ (IDF). The [older WiFiEsp library](https://github.com/bportaluri/WiFiEsp) can't do much with larger data received. Without the passive receive mode, the AT firmware sends all the data at once and the serial RX buffer overflows. It is hard to receive more data over network with AT firmware without UART hardware flow control and Arduino AVR boards don't have flow control and simple esp8266 modules don't have the flow control pins exposed.
 
 Note: The older WiFiEsp library referenced the AT firmware version by SDK version. This library reports AT commands version.
 
