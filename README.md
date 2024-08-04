@@ -1,3 +1,22 @@
+<details>
+  <summary>**Version 2 Upgrade Notes** (click to expand)</summary>
+
+Version 2 has major improvements for WiFiClient:
+
+* it closes the connection as soon as no WiFiClient object references it (when last copy is cleared or goes out of scope) 
+* it detects that connection was closed by peer and releases the link. As soon as all data are read by the sketch it makes the internal buffer available for next connection. It is not necessary to call stop() on connection disconnected by the remote side.
+* in version 1 an old WiFiClient copy could interfere on a new connection on the same AT link. This is very unlikely to happen in version 2.
+
+Version 2 has some breaking changes:
+
+* Version 1 returned MAC address and BSSID in reversed ordering because 5 years ago all Arduino WiFi libraries had it that way. Version 2 returns MAC address and BSSID in normal ordering.
+
+* Version 2 removes `server.available()` function from the library. The functions is still there but only as alias for `server.accept()`. It will work for most use cases. For proper `server.available()`with help of the NetApiHelpers library see the PagerServer example.
+
+* Version 1 had optimized UDP classes WiFiUdpSender and WiFiEspAtUDP. These are removed in version 2. WiFiUDP has the functionality of both of them.
+
+* In version 1 `WiFi.disconnect()` cleared the static IP configuration. In version 2 the static IP configuration is preserved for next `WiFi.begin()`. To return to DHCP clear the static IP configuration with `WiFi.config(INADDR_NONE)`. All Arduino WiFi libraries have it this way.
+</details>
 
 # WiFiEspAT library
 
