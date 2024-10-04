@@ -111,14 +111,14 @@ void printWifiStatus() {
 }
 
 void printMacAddress(byte mac[]) {
-  for (int i = 5; i >= 0; i--) {
+  for (int i = 0; i < 6; i++) {
+    if (i > 0) {
+      Serial.print(":");
+    }
     if (mac[i] < 16) {
       Serial.print("0");
     }
     Serial.print(mac[i], HEX);
-    if (i > 0) {
-      Serial.print(":");
-    }
   }
   Serial.println();
 }
