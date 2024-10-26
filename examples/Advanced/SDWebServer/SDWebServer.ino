@@ -121,6 +121,7 @@ void loop() {
           }
           chunked.println(F("</body>\r\n</html>"));
           chunked.end();
+          file.close();
         });
       } else {
         client.write([](Print& p) { // anonymous lambda function to be called by the library
