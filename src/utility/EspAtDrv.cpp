@@ -28,7 +28,7 @@
 
 //#define ESPATDRV_ASSUME_FLOW_CONTROL
 
-const uint8_t TIMEOUT_COUNT = 3;
+const uint8_t TIMEOUT_COUNT = 5;
 
 const uint8_t WIFI_MODE_STA = 0b01;
 const uint8_t WIFI_MODE_SAP = 0b10;
